@@ -9,7 +9,13 @@
 		"lint": "next lint",
 		"deploy": "opennextjs-cloudflare && wrangler deploy",
 		"preview": "opennextjs-cloudflare && wrangler dev",
-		"cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+		"cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+		"db:generate": "drizzle-kit generate",
+		"db:studio": "drizzle-kit studio --port 3333",
+		"db:create-local": "pnpm dlx wrangler d1 create --local --config=wrangler.jsonc",
+		"db:shell": "pnpm dlx wrangler d1 shell DB --local --config=wrangler.jsonc",
+		"migrate": "pnpm dlx wrangler d1 migrations apply DB --config=wrangler.jsonc --local",
+		"migrate:prod": "pnpm dlx wrangler d1 migrations apply DB --config=wrangler.jsonc"
 	},
 	"dependencies": {
 		"next": "15.2.3",
@@ -24,6 +30,8 @@
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
+		"drizzle-kit": "^0.30.5",
+		"drizzle-orm": "^0.41.0",
 		"eslint": "^9",
 		"eslint-config-next": "15.2.3",
 		"tailwindcss": "^4",
