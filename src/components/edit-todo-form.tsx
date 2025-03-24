@@ -1,6 +1,5 @@
 'use client'
 
-import { updateTodo } from "@/app/todos/actions"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -8,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Todo } from "@/db"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { toast } from "sonner"
 import { z } from "zod"
+import { useTodos } from "@/context/todo-context"
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -25,29 +24,25 @@ type EditTodoFormProps = {
 }
 
 export function EditTodoForm({ todo, onClose }: EditTodoFormProps) {
+  const { handleUpdateTodo } = useTodos()
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: todo.title,
       description: todo.description || "",
       priority: todo.priority
-    },
-    mode: "onChange"
+    }
   })
 
   async function onSubmit(data: FormValues) {
-    try {
-      const formData = new FormData()
-      formData.append("title", data.title)
-      formData.append("description", data.description || "")
-      formData.append("priority", data.priority)
-      
-      await updateTodo(todo.id, formData)
-      toast.success('Todo updated successfully')
-      onClose()
-    } catch (error) {
-      toast.error('Failed to update todo')
-    }
+    const formData = new FormData()
+    formData.append("title", data.title)
+    formData.append("description", data.description || "")
+    formData.append("priority", data.priority)
+    
+    await handleUpdateTodo(todo.id, formData)
+    onClose()
   }
 
   return (
@@ -60,11 +55,7 @@ export function EditTodoForm({ todo, onClose }: EditTodoFormProps) {
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="Enter todo title"
-                  {...field}
-                  value={field.value || ""}
-                />
+                <Input placeholder="Enter title" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

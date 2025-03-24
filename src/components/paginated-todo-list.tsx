@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from "react"
-import { Todo } from "@/db"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { 
@@ -15,157 +14,82 @@ import {
 import { debounce } from "@/lib/utils"
 import { Search, CalendarIcon, Users, Star, CheckCircle2 } from "lucide-react"
 import { EnhancedTodoList } from "./enhanced-todo-list"
-
-// Define the enhanced todo type with user information
-type EnhancedTodo = {
-  id: number
-  title: string
-  description: string | null
-  priority: string
-  completed: boolean
-  createdAt: Date
-  userId: number
-  userName: string | null
-  userEmail: string
-}
+import { useTodos } from "@/context/todo-context"
 
 type PaginatedTodoListProps = {
-  todos: EnhancedTodo[]
   currentUserId: string | undefined
 }
 
-export function PaginatedTodoList({ todos, currentUserId }: PaginatedTodoListProps) {
-  // State for pagination
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(5)
-  
-  // State for search and filters
+export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
+  const { todos } = useTodos()
   const [searchTerm, setSearchTerm] = useState("")
-  const [filteredTodos, setFilteredTodos] = useState<EnhancedTodo[]>(todos)
-  const [priorityFilter, setPriorityFilter] = useState<string>("all")
-  const [completionFilter, setCompletionFilter] = useState<string>("all")
-  const [userFilter, setUserFilter] = useState<string>("all")
-  const [dateFilter, setDateFilter] = useState<string>("all")
-  
-  // Calculate pagination
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredTodos.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredTodos.length / itemsPerPage)
-  
-  // Get unique users for the filter
-  const uniqueUsers = Array.from(new Set(todos.map(todo => todo.userId)))
-    .map(userId => {
-      const todo = todos.find(t => t.userId === userId)
-      return {
-        id: userId,
-        name: todo?.userName || todo?.userEmail
-      }
-    })
-  
-  // Debounced search function
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearch = useCallback(
-    debounce((term: string) => {
-      filterTodos(term, priorityFilter, completionFilter, userFilter, dateFilter)
-    }, 300),
-    [priorityFilter, completionFilter, userFilter, dateFilter]
-  )
-  
-  // Filter todos based on search term and filters
-  const filterTodos = (
-    term: string,
-    priority: string,
-    completion: string,
-    user: string,
-    date: string
-  ) => {
-    let filtered = [...todos]
-    
-    // Search term filter
-    if (term) {
-      const lowerTerm = term.toLowerCase()
-      filtered = filtered.filter(
-        todo => 
-          todo.title.toLowerCase().includes(lowerTerm) || 
-          (todo.description && todo.description.toLowerCase().includes(lowerTerm))
-      )
-    }
-    
-    // Priority filter
-    if (priority !== "all") {
-      filtered = filtered.filter(todo => todo.priority === priority)
-    }
-    
-    // Completion filter
-    if (completion !== "all") {
-      filtered = filtered.filter(todo => 
-        completion === "completed" ? todo.completed : !todo.completed
-      )
-    }
-    
-    // User filter
-    if (user !== "all") {
-      filtered = filtered.filter(todo => todo.userId === parseInt(user))
-    }
-    
-    // Date filter
-    if (date !== "all") {
-      const now = new Date()
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      
-      if (date === "today") {
-        filtered = filtered.filter(todo => {
-          const todoDate = new Date(todo.createdAt)
-          return todoDate >= today && todoDate < new Date(today.getTime() + 86400000)
-        })
-      } else if (date === "week") {
-        const weekAgo = new Date(today.getTime() - 7 * 86400000)
-        filtered = filtered.filter(todo => {
-          const todoDate = new Date(todo.createdAt)
-          return todoDate >= weekAgo
-        })
-      } else if (date === "month") {
-        const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate())
-        filtered = filtered.filter(todo => {
-          const todoDate = new Date(todo.createdAt)
-          return todoDate >= monthAgo
-        })
-      }
-    }
-    
-    setFilteredTodos(filtered)
-    setCurrentPage(1) // Reset to first page on filter change
-  }
-  
-  // Handle search input change
+  const [dateFilter, setDateFilter] = useState("all")
+  const [userFilter, setUserFilter] = useState("all")
+  const [priorityFilter, setPriorityFilter] = useState("all")
+  const [completionFilter, setCompletionFilter] = useState("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState("10")
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value
-    setSearchTerm(term)
-    debouncedSearch(term)
+    setSearchTerm(e.target.value)
+    setCurrentPage(1)
   }
-  
-  // Effect to update filters
-  useEffect(() => {
-    filterTodos(searchTerm, priorityFilter, completionFilter, userFilter, dateFilter)
-  }, [priorityFilter, completionFilter, userFilter, dateFilter])
-  
+
+  const debouncedSearch = debounce(handleSearchChange, 300)
+
+  // Generate unique users from todos using a Map to ensure uniqueness by userId
+  const uniqueUsers = Array.from(
+    todos.reduce((map, todo) => {
+      if (!map.has(todo.userId)) {
+        map.set(todo.userId, {
+          id: todo.userId,
+          name: todo.userName || todo.userEmail
+        })
+      }
+      return map
+    }, new Map()).values()
+  )
+
+  // Filter todos based on search term and filters
+  const filteredTodos = todos.filter(todo => {
+    const matchesSearch = 
+      todo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (todo.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+
+    const matchesDate = dateFilter === "all" ? true :
+      dateFilter === "today" ? new Date(todo.createdAt).toDateString() === new Date().toDateString() :
+      dateFilter === "week" ? new Date(todo.createdAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) :
+      dateFilter === "month" ? new Date(todo.createdAt) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) :
+      true
+
+    const matchesUser = userFilter === "all" ? true : todo.userId === Number(userFilter)
+    const matchesPriority = priorityFilter === "all" ? true : todo.priority === priorityFilter
+    const matchesCompletion = completionFilter === "all" ? true :
+      completionFilter === "completed" ? todo.completed :
+      !todo.completed
+
+    return matchesSearch && matchesDate && matchesUser && matchesPriority && matchesCompletion
+  })
+
+  // Pagination
+  const totalItems = filteredTodos.length
+  const totalPages = Math.ceil(totalItems / Number(pageSize))
+  const startIndex = (currentPage - 1) * Number(pageSize)
+  const endIndex = startIndex + Number(pageSize)
+  const currentTodos = filteredTodos.slice(startIndex, endIndex)
+
   return (
-    <Card className="w-full min-h-[70vh]">
-      <CardHeader className="sticky top-0 bg-card z-10 border-b">
-        <CardTitle>All Todos</CardTitle>
-        <div className="pt-4">
-          {/* Google-like search bar */}
-          <div className="relative mb-4">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
+    <Card className="w-full h-full min-h-[400px]">
+      <CardHeader>
+        <div className="space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              type="search"
+              onChange={debouncedSearch}
               placeholder="Search todos by title or description..."
               className="pl-10 pr-4 py-2 rounded-full"
-              value={searchTerm}
-              onChange={handleSearchChange}
+              defaultValue={searchTerm}
             />
           </div>
           
@@ -188,7 +112,7 @@ export function PaginatedTodoList({ todos, currentUserId }: PaginatedTodoListPro
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <Select
@@ -246,65 +170,56 @@ export function PaginatedTodoList({ todos, currentUserId }: PaginatedTodoListPro
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 pt-6">
-        {filteredTodos.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">
-            No todos match your search criteria. Try adjusting your filters.
-          </p>
-        ) : (
-          <>
-            <EnhancedTodoList 
-              todos={currentItems} 
-              currentUserId={currentUserId} 
-            />
-          </>
-        )}
+
+      <CardContent>
+        <EnhancedTodoList todos={currentTodos} currentUserId={currentUserId} />
       </CardContent>
-      <CardFooter className="bottom-0 bg-card">
-        <div className="flex items-center justify-center gap-12 mt-4 w-full">
-              <div className="text-sm text-muted-foreground">
-                Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredTodos.length)} of {filteredTodos.length} todos
-              </div>
+
+      <CardFooter>
+        <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {Math.min(startIndex + 1, totalItems)} to {Math.min(endIndex, totalItems)} of {totalItems} todos
+          </p>
+          
+          <div className="flex items-center gap-4">
+            <Select
+              value={pageSize}
+              onValueChange={(value) => {
+                setPageSize(value)
+                setCurrentPage(1)
+              }}
+            >
+              <SelectTrigger className="w-fit">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5 per page</SelectItem>
+                <SelectItem value="10">10 per page</SelectItem>
+                <SelectItem value="20">20 per page</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <div className="flex gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
               
-              <div className="flex items-center gap-2">
-                <Select
-                  value={itemsPerPage.toString()}
-                  onValueChange={(value) => {
-                    setItemsPerPage(parseInt(value))
-                    setCurrentPage(1)
-                  }}
-                >
-                  <SelectTrigger className="w-fit">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5 per page</SelectItem>
-                    <SelectItem value="10">10 per page</SelectItem>
-                    <SelectItem value="20">20 per page</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <div className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
             </div>
+          </div>
+        </div>
       </CardFooter>
     </Card>
   )

@@ -35,23 +35,44 @@ export async function addTodo(formData: FormData) {
   const title = formData.get('title') as string
   const description = formData.get('description') as string
   const priority = formData.get('priority') as 'low' | 'medium' | 'high'
-
+  
   if (!title) {
     throw new Error('Title is required')
   }
 
   const database = getDB(getCloudflareContext().env.DB)
-  await database.insert(schema.todos).values({
-    title,
-    description,
-    priority: priority || 'medium',
-    completed: false,
-    userId: +session.user.id,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  })
+  const result = await database.insert(schema.todos)
+    .values({
+      title,
+      description,
+      priority: priority || 'medium',
+      completed: false,
+      userId: +session.user.id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    })
+    .returning()
 
+  // Get the created todo with user information
+  const todo = await database.select({
+    id: schema.todos.id,
+    title: schema.todos.title,
+    description: schema.todos.description,
+    priority: schema.todos.priority,
+    completed: schema.todos.completed,
+    createdAt: schema.todos.createdAt,
+    userId: schema.todos.userId,
+    userName: schema.users.name,
+    userEmail: schema.users.email,
+  })
+  .from(schema.todos)
+  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
+  .where(eq(schema.todos.id, result[0].id))
+  .limit(1)
+
+  revalidatePath('/')
   revalidatePath('/todos')
+  return todo[0]
 }
 
 export async function toggleTodo(id: number, completed: boolean) {
@@ -67,10 +88,25 @@ export async function toggleTodo(id: number, completed: boolean) {
   await database.update(schema.todos)
     .set({ completed, updatedAt: new Date() })
     .where(eq(schema.todos.id, id))
-    .returning()
   
-  revalidatePath('/')
-  revalidatePath('/todos')
+  // Get the updated todo with user information
+  const todo = await database.select({
+    id: schema.todos.id,
+    title: schema.todos.title,
+    description: schema.todos.description,
+    priority: schema.todos.priority,
+    completed: schema.todos.completed,
+    createdAt: schema.todos.createdAt,
+    userId: schema.todos.userId,
+    userName: schema.users.name,
+    userEmail: schema.users.email,
+  })
+  .from(schema.todos)
+  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
+  .where(eq(schema.todos.id, id))
+  .limit(1)
+  
+  return todo[0]
 }
 
 export async function deleteTodo(id: number) {
@@ -116,17 +152,44 @@ export async function updateTodo(id: number, formData: FormData) {
       updatedAt: new Date() 
     })
     .where(eq(schema.todos.id, id))
+
+  // Get the updated todo with user information
+  const todo = await database.select({
+    id: schema.todos.id,
+    title: schema.todos.title,
+    description: schema.todos.description,
+    priority: schema.todos.priority,
+    completed: schema.todos.completed,
+    createdAt: schema.todos.createdAt,
+    userId: schema.todos.userId,
+    userName: schema.users.name,
+    userEmail: schema.users.email,
+  })
+  .from(schema.todos)
+  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
+  .where(eq(schema.todos.id, id))
+  .limit(1)
   
   revalidatePath('/')
   revalidatePath('/todos')
+  return todo[0]
 }
 
 export async function getTodos(userId: number) {
   const database = getDB(getCloudflareContext().env.DB)
-  const todos = await database.select()
-    .from(schema.todos)
-    .where(eq(schema.todos.userId, userId))
-    .orderBy(schema.todos.createdAt)
-  
-  return todos
+  return await database.select({
+    id: schema.todos.id,
+    title: schema.todos.title,
+    description: schema.todos.description,
+    priority: schema.todos.priority,
+    completed: schema.todos.completed,
+    createdAt: schema.todos.createdAt,
+    userId: schema.todos.userId,
+    userName: schema.users.name,
+    userEmail: schema.users.email,
+  })
+  .from(schema.todos)
+  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
+  .where(eq(schema.todos.userId, userId))
+  .orderBy(schema.todos.createdAt)
 }

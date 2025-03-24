@@ -1,15 +1,14 @@
 'use client'
 
-import { addTodo } from "@/app/todos/actions"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useTodos } from "@/context/todo-context"
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -19,41 +18,35 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-const defaultValues: FormValues = {
-  title: "",
-  description: "",
-  priority: "medium"
-}
-
 export function AddTodoForm() {
+  const { handleAddTodo } = useTodos()
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
-    mode: "onChange"
+    defaultValues: {
+      title: "",
+      description: "",
+      priority: "medium"
+    }
   })
 
   async function onSubmit(data: FormValues) {
-    try {
-      const formData = new FormData()
-      formData.append("title", data.title)
-      formData.append("description", data.description || "")
-      formData.append("priority", data.priority)
-      
-      await addTodo(formData)
-      toast.success('Todo added successfully')
-      form.reset(defaultValues)
-    } catch (error) {
-      toast.error('Failed to add todo')
-    }
+    const formData = new FormData()
+    formData.append("title", data.title)
+    formData.append("description", data.description || "")
+    formData.append("priority", data.priority)
+    
+    await handleAddTodo(formData)
+    form.reset()
   }
 
   return (
-    <Card className="w-full max-w-lg mx-auto">
-      <CardHeader>
-        <CardTitle>Add New Todo</CardTitle>
-      </CardHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Add New Todo</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <FormField
               control={form.control}
@@ -62,11 +55,7 @@ export function AddTodoForm() {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter todo title"
-                      {...field}
-                      value={field.value || ""}
-                    />
+                    <Input placeholder="Enter title" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,8 +112,8 @@ export function AddTodoForm() {
               Add Todo
             </Button>
           </CardFooter>
-        </form>
-      </Form>
-    </Card>
+        </Card>
+      </form>
+    </Form>
   )
 }

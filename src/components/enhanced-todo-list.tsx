@@ -1,28 +1,15 @@
 'use client'
 
-import { deleteTodo, toggleTodo } from "@/app/todos/actions"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { toast } from "sonner"
 import { EditTodoForm } from "./edit-todo-form"
 import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { User, Clock } from "lucide-react"
 import { Todo } from "@/db"
-
-// Enhanced Todo with user information
-type EnhancedTodo = {
-  id: number
-  title: string
-  description: string | null
-  priority: string
-  completed: boolean
-  createdAt: Date
-  userId: number
-  userName: string | null
-  userEmail: string
-}
+import { useTodos, EnhancedTodo } from "@/context/todo-context"
+import { toast } from "sonner"
 
 type EnhancedTodoListProps = {
   todos: EnhancedTodo[]
@@ -30,6 +17,7 @@ type EnhancedTodoListProps = {
 }
 
 export function EnhancedTodoList({ todos, currentUserId }: EnhancedTodoListProps) {
+  const { handleToggleTodo, handleDeleteTodo } = useTodos()
   const [open, setOpen] = useState(false)
   const [selectedTodo, setSelectedTodo] = useState<EnhancedTodo | null>(null)
   
@@ -67,13 +55,7 @@ export function EnhancedTodoList({ todos, currentUserId }: EnhancedTodoListProps
                   toast.error("You can only update your own todos")
                   return
                 }
-                
-                try {
-                  await toggleTodo(todo.id, checked as boolean)
-                  toast.success('Todo updated')
-                } catch (error) {
-                  toast.error('Failed to update todo')
-                }
+                await handleToggleTodo(todo.id, checked as boolean)
               }}
               disabled={!isOwner(todo)}
             />
@@ -154,13 +136,7 @@ export function EnhancedTodoList({ todos, currentUserId }: EnhancedTodoListProps
                   toast.error("You can only delete your own todos")
                   return
                 }
-                
-                try {
-                  await deleteTodo(todo.id)
-                  toast.success('Todo deleted')
-                } catch (error) {
-                  toast.error('Failed to delete todo')
-                }
+                await handleDeleteTodo(todo.id)
               }}
               disabled={!isOwner(todo)}
             >
