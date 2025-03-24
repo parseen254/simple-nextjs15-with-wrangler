@@ -26,37 +26,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth(() => {
                 },
                 authorize: async (credentials) => {
                     try {
-                        // Better error handling with specific error messages
                         if (!credentials) {
-                            throw new Error("No credentials provided")
+                            throw new Error("Please provide your email and verification code")
                         }
                         
                         // Parse and validate credentials
-                        const { email, otp } = await OtpZodSchema.parseAsync(credentials)
+                        const { email, otp } = await OtpZodSchema.parseAsync(credentials).catch(err => {
+                            throw new Error("Invalid verification code format")
+                        })
                         
-                        // Verify OTP with improved error handling
+                        // Verify OTP
                         const result = await verifyOtp(email, otp)
                         
-                        if (result.success) {
-                            const user = await getUserByEmail(email)
-                            if (!user) {
-                                throw new Error("User not found")
-                            }
-                            
-                            // Format user for NextAuth
-                            return {
-                                ...user,
-                                id: user.id.toString(),
-                            }
+                        if (!result.success) {
+                            throw new Error("Invalid verification code")
+                        }
+
+                        // Get or create user
+                        const user = await getUserByEmail(email)
+                        if (!user) {
+                            throw new Error("Failed to create user account")
                         }
                         
-                        throw new Error("Invalid verification code")
+                        return {
+                            ...user,
+                            id: user.id.toString(),
+                        }
                     } catch (error) {
-                        // Enhance error messages for better client-side handling
+                        console.error("Authentication error:", error)
                         const message = error instanceof Error 
                             ? error.message 
-                            : "Authentication failed";
-                            
+                            : "Authentication failed. Please try again."
                         throw new Error(message)
                     }
                 }

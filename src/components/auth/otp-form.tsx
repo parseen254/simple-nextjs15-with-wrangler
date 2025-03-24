@@ -3,7 +3,7 @@ import { useTransition, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { KeyIcon, MailCheckIcon, RefreshCw } from 'lucide-react';
+import { MailCheckIcon, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -49,6 +49,14 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
     mode: 'onChange',
   });
 
+  // Format the countdown timer display
+  const formatCountdown = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   // Handle the countdown timer
   useEffect(() => {
     if (countdown > 0) {
@@ -62,16 +70,17 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
   // Function to handle resending OTP
   async function handleResendOtp() {
     if (countdown > 0) return;
-
+    
     setIsResending(true);
     try {
       await requestOtp(email);
+      form.reset(); // Clear the form when resending
       toast.success('Verification Code Sent', {
         description: 'Please check your inbox for the new 6-digit code',
         duration: 5000,
         icon: <MailCheckIcon />
       });
-      setCountdown(60); // Start with 60 seconds
+      setCountdown(60);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to resend verification code';
       toast.error('Error Sending Code', {
@@ -83,60 +92,64 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
     }
   }
 
-  // Format the countdown for display
-  const formatCountdown = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
   async function onSubmit(values: z.infer<typeof otpSchema>) {
     startTransition(async () => {
       try {
+        // Immediately prevent multiple submissions
+        form.reset({ otp: values.otp }); // Keep the same value while disabling input
+        
+        // Attempt sign in through Next Auth
         const result = await signIn('otp-auth', {
           email,
           otp: values.otp,
           redirect: false,
-        });
-
+        });        
+        // Check if authentication failed and handle errors from Next Auth
         if (result?.error) {
-          const errorMessage = result.error || 'Authentication failed';
-          form.setError('otp', {
-            type: 'manual',
-            message: errorMessage
-          });
+          // If failed, clear the form
+          form.reset();
+          
+          // Display error from Next Auth
+          const errorMessage = 'Invalid verification code';
           toast.error('Verification Failed', {
             description: errorMessage,
-            duration: 5000
+            duration: 5000,
+            action: {
+              label: 'Try Again',
+              onClick: () => form.setFocus('otp')
+            }
           });
-        } else {
-          await updateSession();
-
-          toast.success('Authentication Successful', {
-            description: 'Redirecting to your dashboard...',
-            duration: 4000
-          });
-
-          await Promise.all([
-            router.refresh(),
-            new Promise(resolve => setTimeout(resolve, 100))
-          ]);
-
-          router.push('/todos');
-          router.refresh();
+          return;
         }
+        
+        // Authentication succeeded, now we can:
+        // 1. Update the session
+        await updateSession();
+        
+        // 2. Show success toast
+        toast.success('Authentication Successful', {
+          description: 'Redirecting to your dashboard...',
+          duration: 4000
+        });
+        
+        // 3. After a small delay for session update, redirect
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // 4. Navigate to dashboard
+        router.push('/todos');
+        router.refresh();
       } catch (error) {
+        // Handle unexpected errors (network issues, etc.)
+        form.reset();
+        
         const errorMessage = error instanceof Error ? error.message : 'Verification failed';
-
         toast.error('Verification Failed', {
           description: errorMessage,
-          duration: 5000
-        });
-
-        form.setError('otp', {
-          type: 'manual',
-          message: errorMessage
+          duration: 5000,
+          action: {
+            label: 'Try Again',
+            onClick: () => form.setFocus('otp')
+          }
         });
       }
     });
@@ -165,6 +178,11 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
                     maxLength={6}
                     value={field.value}
                     onChange={field.onChange}
+                    onComplete={(value) => {
+                      if (value.length === 6) {
+                        form.handleSubmit(onSubmit)();
+                      }
+                    }}
                     disabled={isPending}
                     containerClassName="justify-center gap-2"
                   >
@@ -188,15 +206,15 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <LoadingButton
-            type="submit"
+          <LoadingButton 
+            type="submit" 
             className="w-full h-11"
             isLoading={isPending}
             loadingText="Verifying..."
           >
             Verify Code
           </LoadingButton>
-
+          
           <Button
             type="button"
             variant="ghost"
@@ -210,11 +228,18 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
           <Button
             type="button"
             variant="outline"
-            className="w-full text-sm"
+            className="w-full text-sm flex items-center justify-center gap-2"
             onClick={handleResendOtp}
             disabled={isPending || isResending || countdown > 0}
           >
-            {countdown > 0 ? `Resend Code in ${formatCountdown(countdown)}` : 'Resend Code'}
+            {countdown > 0 ? (
+              <span>{formatCountdown(countdown)}</span>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                <span>Resend Code</span>
+              </>
+            )}
           </Button>
         </div>
       </form>
