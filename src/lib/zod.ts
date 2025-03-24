@@ -1,14 +1,15 @@
 import { object, string } from "zod"
 import { z } from "zod"
 
+// Enhanced OTP Schema with more specific validation error messages
 export const OtpZodSchema = object({
-    email: string({ required_error: "Email is required" })
-        .min(1, "Email is required")
-        .email("Invalid email"),
-    otp: string({ required_error: "OTP is required" })
-        .min(1, "OTP is required")
-        .min(6, "OTP must be exactly 6 characters")
-        .max(6, "OTP must be exactly 6 characters"),
+  email: string({ required_error: "Email is required" })
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  otp: string({ required_error: "Verification code is required" })
+    .min(6, "Verification code must be exactly 6 digits")
+    .max(6, "Verification code must be exactly 6 digits")
+    .regex(/^\d+$/, "Verification code must contain only digits"),
 })
 
 export const todoSchema = z.object({
