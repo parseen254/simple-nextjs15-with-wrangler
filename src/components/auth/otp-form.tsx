@@ -35,29 +35,26 @@ type OtpFormProps = {
 };
 
 export function OtpForm({ email, onBack }: OtpFormProps) {
+  const router = useRouter();
+  const [countdown, setCountdown] = useState(60);
   const [isPending, startTransition] = useTransition();
   const [isResending, setIsResending] = useState(false);
-  const [countdown, setCountdown] = useState(60);
-  const router = useRouter();
   const { update: updateSession } = useSession();
 
   const form = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
     defaultValues: {
-      otp: '',
+      otp: ''
     },
-    mode: 'onChange',
+    mode: 'onChange'
   });
 
   // Format the countdown timer display
-  const formatCountdown = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  function formatCountdown(seconds: number) {
+    return `Try again in ${seconds}s`;
+  }
 
-  // Handle the countdown timer
+  // Countdown timer effect
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => {
@@ -125,31 +122,24 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
         // Authentication succeeded, now we can:
         // 1. Update the session
         await updateSession();
-        
         // 2. Show success toast
         toast.success('Authentication Successful', {
           description: 'Redirecting to your dashboard...',
           duration: 4000
         });
-        
         // 3. After a small delay for session update, redirect
         await new Promise(resolve => setTimeout(resolve, 300));
-        
         // 4. Navigate to dashboard
         router.push('/todos');
         router.refresh();
+
       } catch (error) {
         // Handle unexpected errors (network issues, etc.)
         form.reset();
-        
         const errorMessage = error instanceof Error ? error.message : 'Verification failed';
-        toast.error('Verification Failed', {
+        toast.error('Error', {
           description: errorMessage,
-          duration: 5000,
-          action: {
-            label: 'Try Again',
-            onClick: () => form.setFocus('otp')
-          }
+          duration: 5000
         });
       }
     });
@@ -215,16 +205,6 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
             Verify Code
           </LoadingButton>
           
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full text-sm"
-            onClick={onBack}
-            disabled={isPending}
-          >
-            Use a different email address
-          </Button>
-
           <Button
             type="button"
             variant="outline"

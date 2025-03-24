@@ -49,7 +49,10 @@ export function AuthComponent() {
 
   return (
     <Suspense fallback={<AuthSkeleton />}>
-      <AuthCard description={description}>
+      <AuthCard 
+        description={description}
+        onBack={stage === 'otp' ? handleBackToEmail : undefined}
+      >
         {stage === 'email' ? (
           <EmailForm onComplete={handleEmailSubmit} />
         ) : (
