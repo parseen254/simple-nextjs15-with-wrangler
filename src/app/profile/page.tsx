@@ -8,63 +8,143 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { eq } from "drizzle-orm"
 import { Label } from '@/components/ui/label'
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import Image from "next/image"
+import { updateProfile, splitFullName } from "./actions"
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined }
+}) {
   const session = await auth();
-  
-  // If user is not logged in, redirect to home page
-  if (!session || !session.user) {
+
+  if (!session?.user) {
     redirect('/');
   }
-  
+
+  // Await searchParams before using it
+  const isEditing = (await Promise.resolve(searchParams)).edit === 'true';
+
   const userId = session.user.id;
   const database = getDB(getCloudflareContext().env.DB);
-  
-  // Get user information
+
   const user = await database
     .select()
     .from(schema.users)
     .where(eq(schema.users.id, parseInt(userId || '')))
     .then(users => users[0]);
-  
+
+  const { firstName, lastName } = await splitFullName(user.name);
+
   return (
     <main className="container mx-auto py-8">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>My Profile</CardTitle>
-            <CardDescription>View and manage your account details</CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>My Profile</CardTitle>
+                <CardDescription>View and manage your account details</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Name</Label>
-                  <p className="text-lg">{user.name || 'Not provided'}</p>
+            <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative w-40 h-40 rounded-full overflow-hidden bg-muted">
+                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                    {/* Placeholder for profile image */}
+                    <svg
+                      className="w-20 h-20"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </div>
                 </div>
-                <div>
-                  <Label>Email</Label>
-                  <p className="text-lg">{user.email}</p>
-                </div>
-                <div>
-                  <Label>Member since</Label>
-                  <p className="text-lg">{new Date(user.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <Label>Last Updated</Label>
-                  <p className="text-lg">
-                    {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Unknown'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-end mt-6">
-                <Link href="/todos">
-                  <Button variant="default">
-                    Go to My Todos
+                {isEditing && (
+                  <Button variant="outline" size="sm" className="w-full">
+                    Change Photo
                   </Button>
-                </Link>
+                )}
               </div>
+              {isEditing ? (
+                <form action={updateProfile} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        name="firstName"
+                        defaultValue={firstName}
+                        placeholder="Enter your first name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        defaultValue={lastName}
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <p className="text-lg font-medium text-muted-foreground">{user.email}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Member since</Label>
+                      <p className="text-lg font-medium text-muted-foreground">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-4">
+                    <Link href="/profile">
+                      <Button variant="outline">Cancel</Button>
+                    </Link>
+                    <Button type="submit">Save Changes</Button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Full Name</Label>
+                      <p className="text-lg font-medium">{user.name}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <p className="text-lg font-medium">{user.email}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Member since</Label>
+                      <p className="text-lg font-medium">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    {!isEditing && (
+                      <Link href="/profile?edit=true">
+                        <Button variant="outline">Edit Profile</Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
