@@ -1,7 +1,7 @@
 'use server'
 
 import { getDB, getTodoWithUserInfo, updateTodo as updateTodoInDb } from '@/db'
-import { eq } from 'drizzle-orm'
+import { eq, desc } from 'drizzle-orm'
 import * as schema from '@/db/schema/schema'
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { auth } from '@/lib/auth'
@@ -159,8 +159,8 @@ export async function getTodos(userId: number) {
     userName: schema.users.name,
     userEmail: schema.users.email,
   })
-    .from(schema.todos)
-    .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
-    .where(eq(schema.todos.userId, userId))
-    .orderBy(schema.todos.createdAt)
+  .from(schema.todos)
+  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
+  .where(eq(schema.todos.userId, userId))
+  .orderBy(desc(schema.todos.createdAt))
 }
