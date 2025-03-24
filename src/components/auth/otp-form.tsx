@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { KeyIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 import { 
@@ -36,6 +36,7 @@ type OtpFormProps = {
 export function OtpForm({ email, onBack }: OtpFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { update: updateSession } = useSession();
 
   const form = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
@@ -45,7 +46,7 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
     mode: 'onChange',
   });
 
-  function onSubmit(values: z.infer<typeof otpSchema>) {
+  async function onSubmit(values: z.infer<typeof otpSchema>) {
     startTransition(async () => {
       try {
         const result = await signIn('otp-auth', {
@@ -56,19 +57,28 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
 
         if (result?.error) {
           const errorMessage = result.error || 'Authentication failed';
-          
           form.setError('otp', { 
             type: 'manual', 
             message: errorMessage 
           });
-          
           toast.error(errorMessage);
         } else {
+          // Update the session first
+          await updateSession();
+          
           toast.success('Authentication successful');
           
-          // Using router.refresh() before redirect ensures the session is updated
+          // Use Promise.all to ensure both operations complete
+          await Promise.all([
+            // Refresh the router to update server components
+            router.refresh(),
+            // Small delay to ensure session is propagated
+            new Promise(resolve => setTimeout(resolve, 100))
+          ]);
+
+          // Then redirect
+          router.push('/todos');
           router.refresh();
-          router.push('/');
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Verification failed';
