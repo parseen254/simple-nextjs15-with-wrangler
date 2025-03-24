@@ -71,49 +71,57 @@ const MessageTabs = memo(({
                 value="all" 
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2"
             >
-                <Inbox className="h-4 w-4 mr-2" />
-                All
-                {unreadCounts.all > 0 && (
-                    <Badge variant="secondary" className="ml-2">
-                        {unreadCounts.all}
-                    </Badge>
-                )}
+                <div className="flex items-center">
+                    <Inbox className="h-4 w-4 mr-2" />
+                    <span>All</span>
+                    {unreadCounts.all > 0 && (
+                        <div className="ml-2 flex items-center justify-center rounded-full bg-primary w-5 h-5 text-[10px] text-white font-medium">
+                            {unreadCounts.all}
+                        </div>
+                    )}
+                </div>
             </TabsTrigger>
             <TabsTrigger 
                 value="email" 
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2"
             >
-                <MailIcon className="h-4 w-4 mr-2" />
-                Email
-                {unreadCounts.email > 0 && (
-                    <Badge variant="secondary" className="ml-2 bg-blue-500/20">
-                        {unreadCounts.email}
-                    </Badge>
-                )}
+                <div className="flex items-center">
+                    <MailIcon className="h-4 w-4 mr-2" />
+                    <span>Email</span>
+                    {unreadCounts.email > 0 && (
+                        <div className="ml-2 flex items-center justify-center rounded-full bg-blue-500 w-5 h-5 text-[10px] text-white font-medium">
+                            {unreadCounts.email}
+                        </div>
+                    )}
+                </div>
             </TabsTrigger>
             <TabsTrigger 
                 value="sms" 
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2"
             >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                SMS
-                {unreadCounts.sms > 0 && (
-                    <Badge variant="secondary" className="ml-2 bg-green-500/20">
-                        {unreadCounts.sms}
-                    </Badge>
-                )}
+                <div className="flex items-center">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    <span>SMS</span>
+                    {unreadCounts.sms > 0 && (
+                        <div className="ml-2 flex items-center justify-center rounded-full bg-green-500 w-5 h-5 text-[10px] text-white font-medium">
+                            {unreadCounts.sms}
+                        </div>
+                    )}
+                </div>
             </TabsTrigger>
             <TabsTrigger 
                 value="whatsapp" 
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2"
             >
-                <PhoneCall className="h-4 w-4 mr-2" />
-                WhatsApp
-                {unreadCounts.whatsapp > 0 && (
-                    <Badge variant="secondary" className="ml-2 bg-emerald-500/20">
-                        {unreadCounts.whatsapp}
-                    </Badge>
-                )}
+                <div className="flex items-center">
+                    <PhoneCall className="h-4 w-4 mr-2" />
+                    <span>WhatsApp</span>
+                    {unreadCounts.whatsapp > 0 && (
+                        <div className="ml-2 flex items-center justify-center rounded-full bg-emerald-500 w-5 h-5 text-[10px] text-white font-medium">
+                            {unreadCounts.whatsapp}
+                        </div>
+                    )}
+                </div>
             </TabsTrigger>
         </TabsList>
     </Tabs>
@@ -142,6 +150,19 @@ const MessageItem = memo(({
         }
     };
 
+    const getBadgeColor = (type: string) => {
+        switch (type) {
+            case 'email':
+                return 'bg-blue-500';
+            case 'sms':
+                return 'bg-green-500';
+            case 'whatsapp':
+                return 'bg-emerald-500';
+            default:
+                return 'bg-primary';
+        }
+    };
+
     return (
         <div 
             className={cn(
@@ -150,9 +171,9 @@ const MessageItem = memo(({
             )}
             onClick={onClick}
         >
-            <div className="mr-4">
+            <div className="mr-4 relative">
                 <Avatar className={cn(
-                    "h-10 w-10 rounded-full justify-center items-center",
+                    "h-10 w-10 rounded-full flex items-center justify-center",
                     message.type === 'email' && "bg-blue-100",
                     message.type === 'sms' && "bg-green-100",
                     message.type === 'whatsapp' && "bg-emerald-100"
@@ -165,6 +186,12 @@ const MessageItem = memo(({
                         <MessageTypeIcon type={message.type} />
                     </div>
                 </Avatar>
+                {!message.read && (
+                    <div className={cn(
+                        "absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-background",
+                        getBadgeColor(message.type)
+                    )}></div>
+                )}
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
@@ -231,45 +258,52 @@ const MessageDetail = memo(({
 }: { 
     message: DevMessage, 
     onBack: () => void 
-}) => (
-    <div className="h-full flex flex-col">
-        <div className="border-b py-2 px-4 flex items-center">
-            <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={onBack}
-                className="mr-2"
-            >
-                <ChevronLeft className="h-4 w-4" />
-                Back
-            </Button>
-        </div>
-        <div className="overflow-auto flex-1 p-6">
-            <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-xl font-semibold">{message.subject}</h2>
-                    <Badge
-                        className={cn(
-                            message.type === 'email' && "bg-blue-100 text-blue-700 hover:bg-blue-100",
-                            message.type === 'sms' && "bg-green-100 text-green-700 hover:bg-green-100",
-                            message.type === 'whatsapp' && "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
-                        )}
-                    >
-                        {message.type}
-                    </Badge>
+}) => {
+    return (
+        <div className="h-full flex flex-col">
+            <div className="border-b py-2 px-4 flex items-center">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={onBack}
+                    className="flex items-center gap-1"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                    Back
+                </Button>
+            </div>
+            <div className="overflow-auto flex-1 p-6">
+                <div className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-xl font-semibold">{message.subject}</h2>
+                        <Badge
+                            variant="outline"
+                            className={cn(
+                                "flex items-center gap-1",
+                                message.type === 'email' && "text-blue-700 border-blue-200",
+                                message.type === 'sms' && "text-green-700 border-green-200",
+                                message.type === 'whatsapp' && "text-emerald-700 border-emerald-200"
+                            )}
+                        >
+                            {message.type === 'email' && <MailIcon className="h-3 w-3" />}
+                            {message.type === 'sms' && <MessageSquare className="h-3 w-3" />}
+                            {message.type === 'whatsapp' && <PhoneCall className="h-3 w-3" />}
+                            <span>{message.type}</span>
+                        </Badge>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                        <span className="mr-2">To: {message.to}</span>
+                        <span>•</span>
+                        <span className="ml-2">{new Date(message.createdAt).toLocaleString()}</span>
+                    </div>
                 </div>
-                <div className="flex items-center text-sm text-muted-foreground">
-                    <span className="mr-2">To: {message.to}</span>
-                    <span>•</span>
-                    <span className="ml-2">{new Date(message.createdAt).toLocaleString()}</span>
+                <div className="prose max-w-none">
+                    <div dangerouslySetInnerHTML={{ __html: message.content }} />
                 </div>
             </div>
-            <div className="prose max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: message.content }} />
-            </div>
         </div>
-    </div>
-));
+    );
+});
 
 export function DevPreview() {
     const [open, setOpen] = useState(false);
@@ -309,16 +343,36 @@ export function DevPreview() {
             fetchMessages();
         }
         
-        // Poll for new messages every 15 seconds when dialog is open
+        // Poll for new messages every 5 seconds when dialog is open
         let interval: NodeJS.Timeout | null = null;
         if (open) {
-            interval = setInterval(fetchMessages, 15000);
+            interval = setInterval(fetchMessages, 5000);
         }
         
         return () => {
             if (interval) clearInterval(interval);
         };
     }, [open, fetchMessages]);
+
+    useEffect(() => {
+        // Also poll for unread count even when dialog is closed
+        const backgroundInterval = setInterval(async () => {
+            if (!open) {
+                try {
+                    const data = await getDevMessages();
+                    const _unreadCount = data.filter((message) => !message.read).length;
+                    setUnreadCount(_unreadCount);
+                    if (_unreadCount > unreadCount && unreadCount !== 0) {
+                        notification?.play();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch unread count:', error);
+                }
+            }
+        }, 30000); // Every 30 seconds
+        
+        return () => clearInterval(backgroundInterval);
+    }, [open, unreadCount, notification]);
 
     const handleOpenChange = useCallback((isOpen: boolean) => {
         setOpen(isOpen);
@@ -421,15 +475,19 @@ export function DevPreview() {
                         </div>
                     </DialogHeader>
                     
-                    <div className="flex items-center px-6 pb-2">
-                        <SearchBar value={searchQuery} onChange={handleSearchChange} />
-                    </div>
-                    
-                    <MessageTabs 
-                        activeCategory={activeCategory} 
-                        setActiveCategory={setActiveCategory} 
-                        unreadCounts={unreadCounts}
-                    />
+                    {!selectedMessage && (
+                        <>
+                            <div className="flex items-center px-6 pb-2">
+                                <SearchBar value={searchQuery} onChange={handleSearchChange} />
+                            </div>
+                            
+                            <MessageTabs 
+                                activeCategory={activeCategory} 
+                                setActiveCategory={setActiveCategory} 
+                                unreadCounts={unreadCounts}
+                            />
+                        </>
+                    )}
                     
                     <div className="flex-1 overflow-hidden">
                         {isLoading && messages.length === 0 ? (
