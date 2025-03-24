@@ -1,6 +1,6 @@
 'use client'
 
-import { addTodo } from "@/app/actions"
+import { addTodo } from "@/app/todos/actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"

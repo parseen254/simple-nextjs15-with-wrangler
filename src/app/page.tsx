@@ -9,7 +9,7 @@ export default async function Home() {
   
   // If authenticated, redirect to user profile
   if (session && session.user) {
-    redirect('/user');
+    redirect('/todos');
   }
   
   return (

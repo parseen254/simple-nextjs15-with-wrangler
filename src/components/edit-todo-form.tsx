@@ -1,6 +1,6 @@
 'use client'
 
-import { updateTodo } from "@/app/actions"
+import { updateTodo } from "@/app/todos/actions"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"

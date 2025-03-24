@@ -26,20 +26,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth(() => {
                 authorize: async (credentials) => {
                     let user = null
                     const { email, otp } = await OtpZodSchema.parseAsync(credentials)
+                    const result = await verifyOtp(email, otp)
+                    if (result.success) {
+                        user = await getUserByEmail(email)
 
-                    try {
-                        const result = await verifyOtp(email, otp)
-                        if (result.success) {
-                            const user = await getUserByEmail(email)
-                            if (!user) {
-                                throw new Error("User not found")
-                            }
-                        }
-                    } catch (error) {
-                        if (error instanceof Error) {
-                            throw error
-                        }
-                        throw new Error("Authentication failed")
                     }
                     return user
                 }
