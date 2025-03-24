@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { requestOtp } from '@/app/actions';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { LockIcon } from 'lucide-react';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -23,7 +24,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function OtpAuthForm() {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const router = useRouter();
-  
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,7 +44,7 @@ export function OtpAuthForm() {
           toast.error('Please enter the OTP');
           return;
         }
-        
+
         // Sign in using NextAuth
         const result = await signIn('otp-auth', {
           email: values.email,
@@ -65,10 +66,13 @@ export function OtpAuthForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Authentication</CardTitle>
-        <CardDescription>
+    <Card className="w-full max-w-lg mx-auto p-12">
+      <CardHeader className='mb-2'>
+        <CardTitle className='flex items-center mx-auto mb-4'>
+            <LockIcon className="h-4 w-4 mr-2" />
+            Authentication
+        </CardTitle>
+        <CardDescription className='text-center'>
           {isOtpSent
             ? 'Enter the verification code sent to your email'
             : 'Enter your email to receive a verification code'}

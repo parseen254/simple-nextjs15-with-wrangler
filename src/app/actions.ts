@@ -8,18 +8,40 @@ import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { sendEmail } from '@/lib/aws-ses'
 import bcrypt from 'bcryptjs'
 import { generateOtp } from '@/lib/utils'
-import { User } from 'lucide-react'
+import { auth } from '@/lib/auth'
+
+// Helper function to check if a user owns a todo
+async function checkTodoOwnership(todoId: number, userId: number) {
+  const database = getDB(getCloudflareContext().env.DB)
+  const [todo] = await database
+    .select()
+    .from(schema.todos)
+    .where(eq(schema.todos.id, todoId))
+  
+  if (!todo) {
+    throw new Error('Todo not found')
+  }
+  
+  if (todo.userId !== userId) {
+    throw new Error('Unauthorized: You can only modify your own todos')
+  }
+  
+  return todo
+}
 
 export async function addTodo(formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized: You must be signed in to add todos')
+  }
+
   const title = formData.get('title') as string
   const description = formData.get('description') as string
   const priority = formData.get('priority') as 'low' | 'medium' | 'high'
-
   const database = getDB(getCloudflareContext().env.DB)
-  const userId = 1
-
+  
   await database.insert(schema.todos).values({
-    userId,
+    userId: +session.user.id,
     title,
     description,
     priority,
@@ -27,38 +49,65 @@ export async function addTodo(formData: FormData) {
     createdAt: new Date(),
     updatedAt: new Date(),
   }).returning()
-
+  
   revalidatePath('/')
+  revalidatePath('/todos')
+  revalidatePath('/user')
 }
 
 export async function toggleTodo(id: number, completed: boolean) {
-  const database = getDB(getCloudflareContext().env.DB)
+  const session = await auth()
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized: You must be signed in to update todos')
+  }
 
+  // Verify ownership
+  await checkTodoOwnership(id, +session.user.id)
+
+  const database = getDB(getCloudflareContext().env.DB)
   await database.update(schema.todos)
     .set({ completed, updatedAt: new Date() })
     .where(eq(schema.todos.id, id))
     .returning()
-
+  
   revalidatePath('/')
+  revalidatePath('/todos')
+  revalidatePath('/user')
 }
 
 export async function deleteTodo(id: number) {
-  const database = getDB(getCloudflareContext().env.DB)
+  const session = await auth()
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized: You must be signed in to delete todos')
+  }
 
+  // Verify ownership
+  await checkTodoOwnership(id, +session.user.id)
+
+  const database = getDB(getCloudflareContext().env.DB)
   await database.delete(schema.todos)
     .where(eq(schema.todos.id, id))
     .returning()
-
+  
   revalidatePath('/')
+  revalidatePath('/todos')
+  revalidatePath('/user')
 }
 
 export async function updateTodo(id: number, formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized: You must be signed in to update todos')
+  }
+
+  // Verify ownership
+  await checkTodoOwnership(id, +session.user.id)
+
   const title = formData.get('title') as string
   const description = formData.get('description') as string
   const priority = formData.get('priority') as 'low' | 'medium' | 'high'
-
+  
   const database = getDB(getCloudflareContext().env.DB)
-
   await database.update(schema.todos)
     .set({
       title,
@@ -68,8 +117,10 @@ export async function updateTodo(id: number, formData: FormData) {
     })
     .where(eq(schema.todos.id, id))
     .returning()
-
+  
   revalidatePath('/')
+  revalidatePath('/todos')
+  revalidatePath('/user')
 }
 
 export async function getTodos(userId: number) {
