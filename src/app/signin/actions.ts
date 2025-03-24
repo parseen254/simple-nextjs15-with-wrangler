@@ -33,11 +33,20 @@ export async function requestOtp(email: string) {
             .then(otps => otps[0])
 
         if (recentOtp) {
-            const waitTimeSeconds = Math.ceil((new Date(recentOtp.expiresAt).getTime() - Date.now()) / 1000)
-            const nextEligibleTime = addSeconds(new Date(), waitTimeSeconds)
-            const readableTime = formatDistanceToNow(nextEligibleTime, { addSuffix: true })
+            // Calculate seconds since OTP was created
+            const createdAt = new Date(recentOtp.createdAt).getTime();
+            const now = Date.now();
+            const elapsedSeconds = Math.floor((now - createdAt) / 1000);
             
-            throw new Error(`A verification code was recently sent. You can request a new one ${readableTime}`)
+            // Only rate limit for 60 seconds (1 minute)
+            if (elapsedSeconds < 60) {
+                const waitTimeSeconds = 60 - elapsedSeconds;
+                const nextEligibleTime = addSeconds(new Date(), waitTimeSeconds);
+                const readableTime = formatDistanceToNow(nextEligibleTime, { addSuffix: true });
+                
+                throw new Error(`A verification code was recently sent. You can request a new one ${readableTime}`);
+            }
+            // If it's been more than 60 seconds, allow a new OTP
         }
 
         // Generate new OTP

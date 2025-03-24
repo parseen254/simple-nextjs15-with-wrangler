@@ -93,7 +93,7 @@ export function DevPreview() {
         <>
             <Button
                 onClick={() => handleOpenChange(true)}
-                className="fixed top-4 h-12 w-12 right-4 rounded-full p-3 shadow-lg"
+                className="fixed top-4 h-12 w-12 right-4 rounded-full p-3 shadow-lg hover:shadow-xl transition-all"
                 size="lg"
                 variant="outline"
             >
@@ -105,31 +105,21 @@ export function DevPreview() {
                 )}
             </Button>
             <Dialog open={open} onOpenChange={handleOpenChange}>
-                <DialogContent className="max-w-5xl max-h-[85vh] h-[85vh] p-0 overflow-hidden flex flex-col">
-                    <DialogHeader className="px-6 pt-4 pb-2">
+                <DialogContent className="max-w-7xl w-[95vw] max-h-[90vh] h-[90vh] p-0 overflow-hidden flex flex-col bg-gradient-to-b from-background to-background/95 backdrop-blur-sm border-muted/20">
+                    <DialogHeader className="px-8 pt-6 pb-4 border-b">
                         <div className="flex items-center justify-between">
                             <div>
-                                <DialogTitle>Development Messages</DialogTitle>
-                                <DialogDescription>
+                                <DialogTitle className="text-2xl font-bold tracking-tight">Development Messages</DialogTitle>
+                                <DialogDescription className="text-base max-w-3xl">
                                     View and manage your development notifications, including emails, SMS, and WhatsApp messages.
                                 </DialogDescription>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={refresh}
-                                    disabled={isLoading || isRefreshing}
-                                >
-                                    <RefreshCw className={cn("h-4 w-4", (isLoading || isRefreshing) && "animate-spin")} />
-                                </Button>
                             </div>
                         </div>
                     </DialogHeader>
                     
                     {!selectedMessage && (
                         <>
-                            <div className="flex items-center px-6 pb-2">
+                            <div className="flex items-center px-8 py-4 border-b">
                                 <SearchBar value={searchQuery} onChange={handleSearchChange} />
                             </div>
                             
@@ -141,15 +131,15 @@ export function DevPreview() {
                         </>
                     )}
                     
-                    <div className="flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-hidden relative">
                         {isLoading && messages.length === 0 ? (
-                            <div className="p-4 space-y-4">
+                            <div className="p-8 space-y-6">
                                 {Array.from({ length: 5 }).map((_, index) => (
                                     <div key={index} className="flex items-center space-x-4">
-                                        <Skeleton className="h-10 w-10 rounded-full" />
-                                        <div className="space-y-2 flex-1">
-                                            <Skeleton className="h-4 w-3/4" />
-                                            <Skeleton className="h-3 w-1/2" />
+                                        <Skeleton className="h-12 w-12 rounded-full" />
+                                        <div className="space-y-3 flex-1">
+                                            <Skeleton className="h-5 w-3/4" />
+                                            <Skeleton className="h-4 w-1/2" />
                                         </div>
                                     </div>
                                 ))}
@@ -167,6 +157,17 @@ export function DevPreview() {
                                 />
                             </div>
                         )}
+                        
+                        <Button 
+                            variant="secondary" 
+                            size="icon" 
+                            onClick={refresh}
+                            disabled={isLoading || isRefreshing}
+                            className="absolute bottom-6 right-6 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all bg-background/95 backdrop-blur-sm border border-border"
+                        >
+                            <RefreshCw className={cn("h-5 w-5", (isLoading || isRefreshing) && "animate-spin")} />
+                            <span className="sr-only">Refresh messages</span>
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>

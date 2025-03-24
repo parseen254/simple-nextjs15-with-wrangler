@@ -4,9 +4,14 @@ import { MessageItem } from './message-item'
 import type { DevMessage } from '../hooks/use-dev-messages'
 
 const EmptyState = memo(() => (
-    <div className="flex flex-col items-center justify-center h-full">
-        <MailIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <p className="text-muted-foreground">No messages in this category</p>
+    <div className="flex flex-col items-center justify-center h-full py-16">
+        <div className="bg-muted/20 rounded-full p-6 mb-6">
+            <MailIcon className="h-12 w-12 text-muted-foreground/50" />
+        </div>
+        <h3 className="font-medium text-lg mb-2">No messages found</h3>
+        <p className="text-muted-foreground text-center max-w-sm">
+            There are no messages in this category. Messages will appear here when they are sent.
+        </p>
     </div>
 ))
 
@@ -19,7 +24,7 @@ export const MessageList = memo(({ messages, onSelect }: MessageListProps) => {
     if (messages.length === 0) {
         return <EmptyState />
     }
-
+    
     return (
         <div className="divide-y">
             {messages.map((message) => (

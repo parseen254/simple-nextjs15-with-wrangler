@@ -3,16 +3,16 @@ import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { MailIcon } from 'lucide-react';
+import { MailCheckIcon, MailIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from '../ui/form';
 import { Input } from '../ui/input';
 import { LoadingButton } from './loading-button';
@@ -45,21 +45,21 @@ export function EmailForm({ onComplete }: EmailFormProps) {
         toast.success('Verification Code Sent', {
           description: 'Please check your inbox for the 6-digit code',
           duration: 5000,
-          icon: '📧'
+          icon: <MailCheckIcon />
         });
         onComplete(values.email);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to send verification code';
-        
+
         toast.error('Error Sending Code', {
           description: errorMessage,
           duration: 5000
         });
-        
+
         if (errorMessage.toLowerCase().includes('email')) {
-          form.setError('email', { 
-            type: 'manual', 
-            message: errorMessage 
+          form.setError('email', {
+            type: 'manual',
+            message: errorMessage
           });
         }
       }
@@ -99,8 +99,8 @@ export function EmailForm({ onComplete }: EmailFormProps) {
           />
         </div>
 
-        <LoadingButton 
-          type="submit" 
+        <LoadingButton
+          type="submit"
           className="w-full h-11"
           isLoading={isPending}
           loadingText="Sending..."

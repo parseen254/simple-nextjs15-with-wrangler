@@ -13,43 +13,43 @@ type MessageDetailProps = {
 export const MessageDetail = memo(({ message, onBack }: MessageDetailProps) => {
     return (
         <div className="h-full flex flex-col">
-            <div className="border-b py-2 px-4 flex items-center">
+            <div className="border-b py-3 px-8 flex items-center">
                 <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={onBack}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-2"
                 >
                     <ChevronLeft className="h-4 w-4" />
                     Back
                 </Button>
             </div>
-            <div className="overflow-auto flex-1 p-6">
-                <div className="mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-xl font-semibold">{message.subject}</h2>
+            <div className="overflow-auto flex-1 p-8">
+                <div className="mb-8">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-2xl font-semibold tracking-tight">{message.subject}</h2>
                         <Badge
                             variant="outline"
                             className={cn(
-                                "flex items-center gap-1",
-                                message.type === 'email' && "text-blue-700 border-blue-200",
-                                message.type === 'sms' && "text-green-700 border-green-200",
-                                message.type === 'whatsapp' && "text-emerald-700 border-emerald-200"
+                                "flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full",
+                                message.type === 'email' && "text-blue-700 border-blue-200 bg-blue-50",
+                                message.type === 'sms' && "text-green-700 border-green-200 bg-green-50",
+                                message.type === 'whatsapp' && "text-emerald-700 border-emerald-200 bg-emerald-50"
                             )}
                         >
-                            {message.type === 'email' && <MailIcon className="h-3 w-3" />}
-                            {message.type === 'sms' && <MessageSquare className="h-3 w-3" />}
-                            {message.type === 'whatsapp' && <PhoneCall className="h-3 w-3" />}
-                            <span>{message.type}</span>
+                            {message.type === 'email' && <MailIcon className="h-3.5 w-3.5" />}
+                            {message.type === 'sms' && <MessageSquare className="h-3.5 w-3.5" />}
+                            {message.type === 'whatsapp' && <PhoneCall className="h-3.5 w-3.5" />}
+                            <span className="font-medium">{message.type}</span>
                         </Badge>
                     </div>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                        <span className="mr-2">To: {message.to}</span>
+                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
+                        <span>To: <span className="font-medium text-foreground">{message.to}</span></span>
                         <span>•</span>
-                        <span className="ml-2">{new Date(message.createdAt).toLocaleString()}</span>
+                        <span>{new Date(message.createdAt).toLocaleString()}</span>
                     </div>
                 </div>
-                <div className="prose max-w-none">
+                <div className="prose prose-lg max-w-none">
                     <div dangerouslySetInnerHTML={{ __html: message.content }} />
                 </div>
             </div>
