@@ -5,7 +5,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 import * as schema from '@/db/schema/schema'
 import { eq, desc } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
-import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 
 // Abstract interface for all types of messages
 export type MessageContent = {
@@ -16,23 +16,35 @@ export type MessageContent = {
     metadata?: Record<string, any>
 }
 
+// Helper to get the base URL
+async function getBaseUrl() {
+    const headersList = await headers()
+    const host = headersList.get('host') || 'localhost:3000'
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
+    return `${protocol}://${host}`
+}
+
 // Save a development message
 export async function saveDevMessage(message: MessageContent) {
     if (process.env.NODE_ENV !== 'development') {
         return null
     }
 
-    const db = getDB(getCloudflareContext().env.DB)
-    const [result] = await db.insert(schema.devMessages).values({
-        to: message.to,
-        subject: message.subject,
-        content: message.content,
-        type: message.type,
-        read: false,
-        createdAt: new Date()
-    }).returning()
+    // Use the API route to create the message to ensure SSE broadcast
+    const response = await fetch(`${await getBaseUrl()}/api/dev-messages`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message),
+    })
 
-    revalidatePath('/') // Revalidate to refresh the notification count
+    if (!response.ok) {
+        throw new Error('Failed to save message')
+    }
+
+    const result = await response.json()
+    revalidatePath('/')
     return result
 }
 
@@ -40,36 +52,39 @@ export async function saveDevMessage(message: MessageContent) {
  * Get all developer messages for the current user
  */
 export async function getDevMessages() {
+    if (process.env.NODE_ENV !== 'development') {
+        return []
+    }
 
-    const database = getDB(getCloudflareContext().env.DB)
-    const messages = await database.select()
-        .from(schema.devMessages)
-        .orderBy(desc(schema.devMessages.createdAt))
+    // Use the API route to fetch messages
+    const response = await fetch(`${await getBaseUrl()}/api/dev-messages`)
+    if (!response.ok) {
+        throw new Error('Failed to fetch messages')
+    }
 
-    return messages
+    return response.json()
 }
 
 /**
  * Mark a developer message as read
  */
 export async function markDevMessageRead(id: number) {   
-
-    const database = getDB(getCloudflareContext().env.DB)
-
-    // Check if the message belongs to the user
-    const message = await database.select()
-        .from(schema.devMessages)
-        .where(eq(schema.devMessages.id, id))
-        .limit(1)
-        .then(messages => messages[0])
-
-    if (!message) {
-        throw new Error('Message not found or does not belong to you')
+    if (process.env.NODE_ENV !== 'development') {
+        return
     }
 
-    await database.update(schema.devMessages)
-        .set({ read: true })
-        .where(eq(schema.devMessages.id, id))
+    // Use the API route to update message status to ensure SSE broadcast
+    const response = await fetch(`${await getBaseUrl()}/api/dev-messages`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+    })
+
+    if (!response.ok) {
+        throw new Error('Failed to mark message as read')
+    }
 
     revalidatePath('/')
 }
@@ -83,14 +98,12 @@ export async function createDevMessage(message: {
     type: 'email' | 'sms' | 'whatsapp'
     email: string
 }) {
-    const database = getDB(getCloudflareContext().env.DB)
-    await database.insert(schema.devMessages).values({
+    // Use saveDevMessage to ensure consistent behavior
+    await saveDevMessage({
         to: message.email,
         subject: message.title,
         content: message.content,
-        type: message.type,
-        read: false,
-        createdAt: new Date()
+        type: message.type
     })
 
     revalidatePath('/')

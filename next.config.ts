@@ -1,9 +1,16 @@
-import type { NextConfig } from "next";
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
+import type { NextConfig } from 'next'
+import { initOpenNextCloudflareForDev, defineCloudflareConfig } from '@opennextjs/cloudflare'
 
-initOpenNextCloudflareForDev();
+initOpenNextCloudflareForDev()
+
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+      bodySizeLimit: '2mb'
+    }
+  },
+  ...defineCloudflareConfig()
+}
 
-export default nextConfig;
+export default nextConfig

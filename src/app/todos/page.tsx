@@ -2,7 +2,7 @@ import { AddTodoForm } from "@/components/todos/add-todo-form"
 import { PaginatedTodoList } from "@/components/todos/paginated-todo-list"
 import { getTodos } from "./actions"
 import { auth } from "@/lib/auth"
-import { TodoProvider } from "@/context/todo-context"
+import { TodoProvider } from "@/components/todos/context/todo-context"
 
 export default async function TodosPage() {
     const session = await auth()

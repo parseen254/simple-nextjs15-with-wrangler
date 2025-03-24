@@ -30,7 +30,7 @@ import {
   Pencil,
   Trash2
 } from "lucide-react"
-import { useTodos } from "@/context/todo-context"
+import { useTodos } from "@/components/todos/context/todo-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Todo } from "@/db"

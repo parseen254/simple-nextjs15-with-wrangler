@@ -8,7 +8,7 @@ import type { Todo } from "@/db"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { useTodos } from "@/context/todo-context"
+import { useTodos } from "@/components/todos/context/todo-context"
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
