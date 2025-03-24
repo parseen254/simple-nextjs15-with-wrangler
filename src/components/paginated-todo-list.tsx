@@ -34,6 +34,16 @@ import { useTodos } from "@/context/todo-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Todo } from "@/db"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
 
 type PaginatedTodoListProps = {
   currentUserId: string | undefined
@@ -52,6 +62,7 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [open, setOpen] = useState(false)
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
+  const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null)
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
@@ -109,6 +120,22 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
   // Check if any filters are active
   const hasActiveFilters = dateFilter !== "all" || userFilter !== "all" || 
     priorityFilter !== "all" || completionFilter !== "all" || searchTerm !== ""
+
+  // Handle the actual deletion after confirmation
+  const handleDeleteConfirmed = async () => {
+    if (!todoToDelete) return
+
+    try {
+      setIsDeleting(todoToDelete.id)
+      await handleDeleteTodo(todoToDelete.id)
+      toast.success("Todo deleted successfully")
+    } catch (error) {
+      toast.error("Failed to delete todo")
+    } finally {
+      setIsDeleting(null)
+      setTodoToDelete(null)
+    }
+  }
 
   if (todos.length === 0) {
     return (
@@ -370,20 +397,12 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
                     variant="outline"
                     size="sm"
                     disabled={!isOwner(todo) || isDeleting === todo.id}
-                    onClick={async () => {
+                    onClick={() => {
                       if (!isOwner(todo)) {
                         toast.error("You can only delete your own todos")
                         return
                       }
-                      try {
-                        setIsDeleting(todo.id)
-                        await handleDeleteTodo(todo.id)
-                        toast.success("Todo deleted successfully")
-                      } catch (error) {
-                        toast.error("Failed to delete todo")
-                      } finally {
-                        setIsDeleting(null)
-                      }
+                      setTodoToDelete(todo)
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -444,6 +463,26 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
           </div>
         </CardFooter>
       )}
+
+      <AlertDialog open={!!todoToDelete} onOpenChange={(open) => !open && setTodoToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this todo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the todo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirmed}
+              disabled={isDeleting !== null}
+            >
+              {isDeleting === todoToDelete?.id ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }
