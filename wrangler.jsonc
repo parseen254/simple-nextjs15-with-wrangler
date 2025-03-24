@@ -32,8 +32,8 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "bb-new-db",
-			"database_id": "af4b82ec-aae0-454d-ac34-c839b7245f1b",
+			"database_name": "todos-db",
+			"database_id": "f6e04076-443f-4829-9ff1-76ef40a811dc",
 			"migrations_dir": "src/db/migrations"
 		}
 	],
