@@ -3,7 +3,7 @@
 import { getDB } from '@/db'
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 import * as schema from '@/db/schema/schema'
-import { eq } from 'drizzle-orm'
+import { eq, desc } from 'drizzle-orm'
 import { generateOtp } from '@/lib/utils'
 import { sendEmail } from '@/lib/aws-ses'
 import bcrypt from 'bcryptjs'
@@ -60,24 +60,20 @@ export async function verifyOtp(email: string, otp: string) {
     let user = await getUserByEmail(email)
 
     if (!user) {
-        console.log({ user })
-
-        if (!user) {
-            // Create a new user if one doesn't exist
-            [user] = await database.insert(schema.users)
-                .values({
-                    email
-                })
-                .returning()
-            console.log({ user })
-        }
-
+        // Create a new user if one doesn't exist
+        [user] = await database.insert(schema.users)
+            .values({
+                email
+            })
+            .returning()
     }
 
-    // Get OTP
+
+    // Get the latest OTP ordered by creation time (descending)
     const otpRecord = await database.select()
         .from(schema.otps)
         .where(eq(schema.otps.email, user.email))
+        .orderBy(desc(schema.otps.createdAt))
         .limit(1)
         .then(otps => otps[0])
 
@@ -92,13 +88,12 @@ export async function verifyOtp(email: string, otp: string) {
 
     // Verify OTP
     const valid = await bcrypt.compare(otp, otpRecord.otp)
-
     if (!valid) {
         throw new Error('Invalid OTP')
     }
 
-    // Delete OTP after successful verification
-    await database.delete(schema.otps)
+    // Delete ALL OTPs for this user after successful verification
+    database.delete(schema.otps)
         .where(eq(schema.otps.email, user.email))
 
     return { success: true, userId: user.id, email: user.email }

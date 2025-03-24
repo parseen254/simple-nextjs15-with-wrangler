@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, memo } from 'react'
 import { Bell, MailIcon, MessageSquare, PhoneCall, Search, Star, Inbox, Trash, RefreshCw, ChevronLeft } from 'lucide-react'
 import { Button } from './ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog'
 import { cn } from '@/lib/utils'
 import { getDevMessages, markDevMessageRead } from '@/app/dev/actions'
 import { Input } from './ui/input'
@@ -461,7 +461,12 @@ export function DevPreview() {
                 <DialogContent className="max-w-5xl max-h-[85vh] h-[85vh] p-0 overflow-hidden flex flex-col">
                     <DialogHeader className="px-6 pt-4 pb-2">
                         <div className="flex items-center justify-between">
-                            <DialogTitle>Development Messages</DialogTitle>
+                            <div>
+                                <DialogTitle>Development Messages</DialogTitle>
+                                <DialogDescription>
+                                    View and manage your development notifications, including emails, SMS, and WhatsApp messages.
+                                </DialogDescription>
+                            </div>
                             <div className="flex items-center space-x-2">
                                 <Button 
                                     variant="ghost" 

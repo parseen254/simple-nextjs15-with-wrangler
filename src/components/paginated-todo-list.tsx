@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
 import { EditTodoForm } from "./edit-todo-form"
 import { formatDistanceToNow } from "date-fns"
 import { 
@@ -350,6 +350,9 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Edit Todo</DialogTitle>
+                        <DialogDescription>
+                          Make changes to your todo item below. Click save when you're done.
+                        </DialogDescription>
                       </DialogHeader>
                       {selectedTodo && (
                         <EditTodoForm

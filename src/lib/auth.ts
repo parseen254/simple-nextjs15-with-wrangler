@@ -29,6 +29,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth(() => {
                     const result = await verifyOtp(email, otp)
                     if (result.success) {
                         user = await getUserByEmail(email)
+                        user = {
+                            ...user,
+                            id: user.id.toString(),
+                        }
 
                     }
                     return user
