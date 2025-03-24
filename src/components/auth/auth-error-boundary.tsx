@@ -1,57 +1,52 @@
 'use client';
 import { Component, ReactNode } from 'react';
-import { AuthCard } from './auth-card';
-import { Button } from '@/components/ui/button';
+import { Button } from '../ui/button';
 import { toast } from 'sonner';
+import { AuthCard } from './auth-card';
+import { RefreshCcw } from 'lucide-react';
 
-interface ErrorBoundaryProps {
+interface Props {
   children: ReactNode;
-  fallback?: ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean;
   error?: Error;
 }
 
-export class AuthErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error): void {
-    console.error('Auth error boundary caught an error:', error);
-  }
-
-  handleRetry = (): void => {
-    this.setState({ hasError: false, error: undefined });
-    toast.info('Retrying authentication');
+export class AuthErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false
   };
 
-  render() {
-    if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
+  public static getDerivedStateFromError(error: Error): State {
+    return {
+      hasError: true,
+      error
+    };
+  }
 
+  private handleRetry = () => {
+    toast.info('Retrying authentication...', {
+      duration: 3000
+    });
+    this.setState({ hasError: false });
+  };
+
+  public render() {
+    if (this.state.hasError) {
       return (
-        <AuthCard 
-          title="Authentication Error" 
-          description={this.state.error?.message || "There was a problem with authentication"}
-        >
-          <div className="flex flex-col gap-4 items-center py-4">
-            <p className="text-muted-foreground text-center">
-              Please try again or contact support if the problem persists.
+        <AuthCard description="Something went wrong during authentication">
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {this.state.error?.message || 'An unexpected error occurred. Please try again.'}
             </p>
-            <Button 
+            <Button
               onClick={this.handleRetry}
+              className="w-full h-11"
               variant="outline"
             >
+              <RefreshCcw className="w-4 h-4 mr-2" />
               Try Again
             </Button>
           </div>

@@ -42,20 +42,25 @@ export function EmailForm({ onComplete }: EmailFormProps) {
     startTransition(async () => {
       try {
         await requestOtp(values.email);
-        toast.success('Verification code sent', {
-          description: 'Please check your email for the 6-digit code'
+        toast.success('Verification Code Sent', {
+          description: 'Please check your inbox for the 6-digit code',
+          duration: 5000,
+          icon: '📧'
         });
         onComplete(values.email);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
+        const errorMessage = error instanceof Error ? error.message : 'Failed to send verification code';
         
-        toast.error('Error', {
-          description: errorMessage
+        toast.error('Error Sending Code', {
+          description: errorMessage,
+          duration: 5000
         });
         
-        // Set specific field errors for better UX
         if (errorMessage.toLowerCase().includes('email')) {
-          form.setError('email', { type: 'manual', message: errorMessage });
+          form.setError('email', { 
+            type: 'manual', 
+            message: errorMessage 
+          });
         }
       }
     });
@@ -64,28 +69,35 @@ export function EmailForm({ onComplete }: EmailFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2">
-                <MailIcon className="h-4 w-4" />
-                Email
-              </FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="email"
-                  placeholder="Enter your email"
-                  disabled={isPending}
-                  autoFocus
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Sign In or Sign Up</p>
+            <p className="text-sm text-muted-foreground">
+              Enter your email to receive a verification code
+            </p>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="email"
+                    placeholder="name@example.com"
+                    disabled={isPending}
+                    className="h-11"
+                    autoFocus
+                    autoComplete="email"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <LoadingButton 
           type="submit" 
@@ -93,7 +105,7 @@ export function EmailForm({ onComplete }: EmailFormProps) {
           isLoading={isPending}
           loadingText="Sending..."
         >
-          Request Code
+          Continue with Email
         </LoadingButton>
       </form>
     </Form>

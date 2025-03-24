@@ -25,31 +25,27 @@ function AuthSkeleton() {
 export function AuthComponent() {
   const [email, setEmail] = useState<string | null>(null);
   const [stage, setStage] = useState<'email' | 'otp'>('email');
-  const [isPending, startFormTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const handleEmailSubmit = (submittedEmail: string) => {
-    // Use React 19's startTransition for smoother UI updates
     startTransition(() => {
       setEmail(submittedEmail);
       setStage('otp');
-      
-      // Pre-fetch relevant resources for the next step
-      // This helps reduce the delay in OTP verification flow
-      const img = new Image();
-      img.src = '/notification.mp3'; // Prefetch audio notification if used
     });
   };
 
   const handleBackToEmail = () => {
-    // No need for transition here as it's an immediate UI change
     setStage('email');
-    toast.info('Enter a different email address');
+    setEmail(null);
+    toast.info('Back to Email', {
+      description: 'Enter a different email address',
+      duration: 4000,
+    });
   };
 
-  // Determine the correct description based on current stage
   const description = stage === 'email'
-    ? "Enter your email to receive a verification code"
-    : "Enter the verification code sent to your email";
+    ? "Sign in or create an account to continue"
+    : "We've sent you a verification code";
 
   return (
     <Suspense fallback={<AuthSkeleton />}>

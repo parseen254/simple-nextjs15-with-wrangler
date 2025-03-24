@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { MailIcon, RefreshCw } from 'lucide-react'
+import { InboxIcon, MailIcon, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -97,7 +97,7 @@ export function DevPreview() {
                 size="lg"
                 variant="outline"
             >
-                <MailIcon className="size-5" />
+                <InboxIcon className="size-5" />
                 {unreadCount > 0 && (
                     <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
                         {unreadCount}

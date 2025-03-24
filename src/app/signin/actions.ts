@@ -6,6 +6,7 @@ import { eq, desc, and, gt } from 'drizzle-orm'
 import { generateOtp } from '@/lib/utils'
 import { sendEmail } from '@/lib/aws-ses'
 import bcrypt from 'bcryptjs'
+import { formatDistanceToNow, addSeconds } from 'date-fns'
 
 /**
  * Request a new OTP for the given email
@@ -15,31 +16,35 @@ import bcrypt from 'bcryptjs'
  */
 export async function requestOtp(email: string) {
     try {
-        // Generate a random 6-digit OTP
-        const otp = generateOtp()
-        
-        // Hash the OTP for storage
-        const hashedOtp = await bcrypt.hash(otp, 10)
-        
         const database = getDB(getCloudflareContext().env.DB)
-        
-        // Check if the user exists
-        let user = await database.select()
-            .from(schema.users)
-            .where(eq(schema.users.email, email))
-            .limit(1)
-            .then(users => users[0])
-            
-        // Clean up any expired OTPs for this email to keep the database clean
-        await database.delete(schema.otps)
+
+        // Check if there's a recent OTP that hasn't expired
+        const recentOtp = await database
+            .select()
+            .from(schema.otps)
             .where(
                 and(
                     eq(schema.otps.email, email),
                     gt(schema.otps.expiresAt, new Date())
                 )
             )
+            .orderBy(desc(schema.otps.createdAt))
+            .limit(1)
+            .then(otps => otps[0])
+
+        if (recentOtp) {
+            const waitTimeSeconds = Math.ceil((new Date(recentOtp.expiresAt).getTime() - Date.now()) / 1000)
+            const nextEligibleTime = addSeconds(new Date(), waitTimeSeconds)
+            const readableTime = formatDistanceToNow(nextEligibleTime, { addSuffix: true })
             
-        // Insert new OTP
+            throw new Error(`A verification code was recently sent. You can request a new one ${readableTime}`)
+        }
+
+        // Generate new OTP
+        const otp = generateOtp()
+        const hashedOtp = await bcrypt.hash(otp, 10)
+
+        // Store OTP
         await database
             .insert(schema.otps)
             .values({
@@ -54,7 +59,7 @@ export async function requestOtp(email: string) {
             to: email,
             subject: 'Your verification code',
             props: {
-                recipientName: user?.name || undefined,
+                recipientName: undefined,
                 otp,
             },
         })
@@ -76,32 +81,33 @@ export async function verifyOtp(email: string, otp: string) {
     try {
         const database = getDB(getCloudflareContext().env.DB)
         
-        // Get the latest OTP ordered by creation time (descending)
-        const otpRecord = await database.select()
+        // Get latest OTP
+        const otpRecord = await database
+            .select()
             .from(schema.otps)
             .where(eq(schema.otps.email, email))
             .orderBy(desc(schema.otps.createdAt))
             .limit(1)
-            .then(otps => otps[0])
-            
+            .then(records => records[0])
+        
         if (!otpRecord) {
             throw new Error('No verification code found. Please request a new one.')
         }
         
-        // Check if OTP is expired
-        if (new Date() > otpRecord.expiresAt) {
-            // Delete expired OTP
+        // Check expiration
+        if (new Date() > new Date(otpRecord.expiresAt)) {
+            // Clean up expired OTP
             await database.delete(schema.otps)
-                .where(eq(schema.otps.id, otpRecord.id))
-                
-            throw new Error('Verification code expired. Please request a new one.')
+                .where(eq(schema.otps.email, email))
+            
+            throw new Error('Verification code has expired. Please request a new one.')
         }
         
         // Verify OTP
         const valid = await bcrypt.compare(otp, otpRecord.otp)
         
         if (!valid) {
-            throw new Error('Invalid verification code')
+            throw new Error('Invalid verification code. Please try again.')
         }
         
         // Get user by email
@@ -119,7 +125,7 @@ export async function verifyOtp(email: string, otp: string) {
         // Delete ALL OTPs for this user after successful verification
         await database.delete(schema.otps)
             .where(eq(schema.otps.email, email))
-            
+        
         return { success: true, userId: user.id, email: user.email }
     } catch (error) {
         console.error("Error verifying OTP:", error)

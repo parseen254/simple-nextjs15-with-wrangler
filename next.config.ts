@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next'
-import { initOpenNextCloudflareForDev, defineCloudflareConfig } from '@opennextjs/cloudflare'
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 
 initOpenNextCloudflareForDev()
 
@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '2mb'
     }
   },
-  ...defineCloudflareConfig()
 }
 
 export default nextConfig

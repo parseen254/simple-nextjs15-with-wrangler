@@ -61,30 +61,32 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
             type: 'manual', 
             message: errorMessage 
           });
-          toast.error(errorMessage);
+          toast.error('Verification Failed', {
+            description: errorMessage,
+            duration: 5000
+          });
         } else {
-          // Update the session first
           await updateSession();
           
-          toast.success('Authentication successful');
+          toast.success('Authentication Successful', {
+            description: 'Redirecting to your dashboard...',
+            duration: 4000
+          });
           
-          // Use Promise.all to ensure both operations complete
           await Promise.all([
-            // Refresh the router to update server components
             router.refresh(),
-            // Small delay to ensure session is propagated
             new Promise(resolve => setTimeout(resolve, 100))
           ]);
 
-          // Then redirect
           router.push('/todos');
           router.refresh();
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Verification failed';
         
-        toast.error('Authentication Error', {
-          description: errorMessage
+        toast.error('Verification Failed', {
+          description: errorMessage,
+          duration: 5000
         });
         
         form.setError('otp', { 
@@ -98,34 +100,41 @@ export function OtpForm({ email, onBack }: OtpFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <FormField
-          control={form.control}
-          name="otp"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2">
-                <KeyIcon className="h-4 w-4" />
-                Verification Code
-              </FormLabel>
-              <FormControl>
-                <InputOTP
-                  maxLength={6}
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={isPending}
-                  containerClassName="justify-center gap-2"
-                >
-                  <InputOTPGroup>
-                    {Array.from({ length: 6 }).map((_, index) => (
-                      <InputOTPSlot key={index} index={index} />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Verification Code</p>
+              <p className="text-sm text-muted-foreground">
+                Enter the code sent to <span className="font-medium text-foreground">{email}</span>
+              </p>
+            </div>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="otp"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <InputOTP
+                    maxLength={6}
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isPending}
+                    containerClassName="justify-center gap-2"
+                  >
+                    <InputOTPGroup>
+                      {Array.from({ length: 6 }).map((_, index) => (
+                        <InputOTPSlot key={index} index={index} />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </FormControl>
+                <FormMessage className="text-center" />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex flex-col gap-2">
           <LoadingButton 
