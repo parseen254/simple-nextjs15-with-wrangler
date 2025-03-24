@@ -3,10 +3,10 @@ import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { NextAuthProvider } from "@/components/providers";
-import { Navbar } from "@/components/navbar";
+import { NextAuthProvider } from "@/components/common/providers";
+import { Navbar } from "@/components/common/navbar";
 import { auth } from "@/lib/auth";
-import { DevPreview } from "@/components/dev-preview";
+import { DevPreview } from "@/components/dev/dev-preview";
 
 const inter = Inter({ subsets: ["latin"] });
 

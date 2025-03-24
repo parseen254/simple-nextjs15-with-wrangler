@@ -1,15 +1,15 @@
 'use client'
 import { useEffect, useState, useCallback, memo } from 'react'
 import { Bell, MailIcon, MessageSquare, PhoneCall, Search, Star, Inbox, Trash, RefreshCw, ChevronLeft } from 'lucide-react'
-import { Button } from './ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { getDevMessages, markDevMessageRead } from '@/app/dev/actions'
-import { Input } from './ui/input'
-import { Avatar } from './ui/avatar'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { Badge } from './ui/badge'
-import { Skeleton } from './ui/skeleton'
+import { Input } from '@/components/ui/input'
+import { Avatar } from '@/components/ui/avatar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Define the message type directly here to avoid circular imports
 type DevMessage = {

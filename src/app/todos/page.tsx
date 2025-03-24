@@ -1,5 +1,5 @@
-import { AddTodoForm } from "@/components/add-todo-form"
-import { PaginatedTodoList } from "@/components/paginated-todo-list"
+import { AddTodoForm } from "@/components/todos/add-todo-form"
+import { PaginatedTodoList } from "@/components/todos/paginated-todo-list"
 import { getTodos } from "./actions"
 import { auth } from "@/lib/auth"
 import { TodoProvider } from "@/context/todo-context"
