@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { debounce } from "@/lib/utils"
-import { Search, CalendarIcon, Users, Star, CheckCircle2 } from "lucide-react"
+import { Search, CalendarIcon, Users, Star, CheckCircle2, FilterX, UserX, StickerIcon } from "lucide-react"
 import { EnhancedTodoList } from "./enhanced-todo-list"
 import { useTodos } from "@/context/todo-context"
 
@@ -78,8 +78,12 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
   const endIndex = startIndex + Number(pageSize)
   const currentTodos = filteredTodos.slice(startIndex, endIndex)
 
+  // Check if any filters are active
+  const hasActiveFilters = dateFilter !== "all" || userFilter !== "all" || 
+    priorityFilter !== "all" || completionFilter !== "all" || searchTerm !== ""
+
   return (
-    <Card className="w-full h-full min-h-[400px]">
+    <Card className="w-full h-full">
       <CardHeader>
         <div className="space-y-4">
           {/* Search */}
@@ -124,11 +128,18 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All users</SelectItem>
-                  {uniqueUsers.map(user => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
+                  {uniqueUsers.length > 0 ? (
+                    uniqueUsers.map(user => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+                        {user.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="flex items-center gap-2 px-2 py-4 text-muted-foreground">
+                      <UserX className="h-4 w-4" />
+                      <span>No users found</span>
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -168,59 +179,101 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
               </Select>
             </div>
           </div>
+
+          {/* Reset filters button */}
+          {hasActiveFilters && (
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDateFilter("all")
+                  setUserFilter("all")
+                  setPriorityFilter("all")
+                  setCompletionFilter("all")
+                  setSearchTerm("")
+                  setCurrentPage(1)
+                }}
+                className="gap-2"
+              >
+                <FilterX className="h-4 w-4" />
+                Reset filters
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
 
       <CardContent>
-        <EnhancedTodoList todos={currentTodos} currentUserId={currentUserId} />
+        {todos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <StickerIcon className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium">No todos yet</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              Create your first todo using the form on the right
+            </p>
+          </div>
+        ) : filteredTodos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <FilterX className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium">No matching todos</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              Try adjusting your filters or search terms
+            </p>
+          </div>
+        ) : (
+          <EnhancedTodoList todos={currentTodos} currentUserId={currentUserId} />
+        )}
       </CardContent>
 
-      <CardFooter>
-        <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            Showing {Math.min(startIndex + 1, totalItems)} to {Math.min(endIndex, totalItems)} of {totalItems} todos
-          </p>
-          
-          <div className="flex items-center gap-4">
-            <Select
-              value={pageSize}
-              onValueChange={(value) => {
-                setPageSize(value)
-                setCurrentPage(1)
-              }}
-            >
-              <SelectTrigger className="w-fit">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">5 per page</SelectItem>
-                <SelectItem value="10">10 per page</SelectItem>
-                <SelectItem value="20">20 per page</SelectItem>
-              </SelectContent>
-            </Select>
+      {filteredTodos.length > 0 && (
+        <CardFooter>
+          <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              Showing {Math.min(startIndex + 1, totalItems)} to {Math.min(endIndex, totalItems)} of {totalItems} todos
+            </p>
             
-            <div className="flex gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
+            <div className="flex items-center gap-4">
+              <Select
+                value={pageSize}
+                onValueChange={(value) => {
+                  setPageSize(value)
+                  setCurrentPage(1)
+                }}
               >
-                Previous
-              </Button>
+                <SelectTrigger className="w-fit">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5 per page</SelectItem>
+                  <SelectItem value="10">10 per page</SelectItem>
+                  <SelectItem value="20">20 per page</SelectItem>
+                </SelectContent>
+              </Select>
               
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </CardFooter>
+        </CardFooter>
+      )}
     </Card>
   )
 }

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { EditTodoForm } from "./edit-todo-form"
 import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
-import { User, Clock } from "lucide-react"
+import { User, Clock, ClipboardList } from "lucide-react"
 import { Todo } from "@/db"
 import { useTodos, EnhancedTodo } from "@/context/todo-context"
 import { toast } from "sonner"
@@ -38,6 +38,18 @@ export function EnhancedTodoList({ todos, currentUserId }: EnhancedTodoListProps
       createdAt: enhancedTodo.createdAt,
       updatedAt: new Date() // Using current date as updatedAt since it's not in our enhanced todo
     }
+  }
+  
+  if (todos.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <ClipboardList className="h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium">No todos to display</h3>
+        <p className="text-sm text-muted-foreground mt-2">
+          All your filtered todos will appear here
+        </p>
+      </div>
+    )
   }
   
   return (
