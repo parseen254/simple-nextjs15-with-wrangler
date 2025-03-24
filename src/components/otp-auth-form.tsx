@@ -9,7 +9,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { requestOtp, verifyOtp } from '@/app/actions';
+import { requestOtp } from '@/app/actions';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -20,6 +22,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function OtpAuthForm() {
   const [isOtpSent, setIsOtpSent] = useState(false);
+  const router = useRouter();
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,8 +43,21 @@ export function OtpAuthForm() {
           toast.error('Please enter the OTP');
           return;
         }
-        await verifyOtp(values.email, values.otp);
-        toast.success('Successfully authenticated!');
+        
+        // Sign in using NextAuth
+        const result = await signIn('otp-auth', {
+          email: values.email,
+          otp: values.otp,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          toast.error(result.error);
+        } else {
+          toast.success('Successfully authenticated!');
+          router.push('/'); // Redirect to home page
+          router.refresh(); // Refresh the page to update session
+        }
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Something went wrong');

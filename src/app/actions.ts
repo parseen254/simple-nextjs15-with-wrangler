@@ -7,6 +7,8 @@ import * as schema from '@/db/schema/schema'
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { sendEmail } from '@/lib/aws-ses'
 import bcrypt from 'bcryptjs'
+import { generateOtp } from '@/lib/utils'
+import { User } from 'lucide-react'
 
 export async function addTodo(formData: FormData) {
   const title = formData.get('title') as string
@@ -15,7 +17,7 @@ export async function addTodo(formData: FormData) {
 
   const database = getDB(getCloudflareContext().env.DB)
   const userId = 1
-  
+
   await database.insert(schema.todos).values({
     userId,
     title,
@@ -31,7 +33,7 @@ export async function addTodo(formData: FormData) {
 
 export async function toggleTodo(id: number, completed: boolean) {
   const database = getDB(getCloudflareContext().env.DB)
-  
+
   await database.update(schema.todos)
     .set({ completed, updatedAt: new Date() })
     .where(eq(schema.todos.id, id))
@@ -42,7 +44,7 @@ export async function toggleTodo(id: number, completed: boolean) {
 
 export async function deleteTodo(id: number) {
   const database = getDB(getCloudflareContext().env.DB)
-  
+
   await database.delete(schema.todos)
     .where(eq(schema.todos.id, id))
     .returning()
@@ -54,9 +56,9 @@ export async function updateTodo(id: number, formData: FormData) {
   const title = formData.get('title') as string
   const description = formData.get('description') as string
   const priority = formData.get('priority') as 'low' | 'medium' | 'high'
-  
+
   const database = getDB(getCloudflareContext().env.DB)
-  
+
   await database.update(schema.todos)
     .set({
       title,
@@ -70,16 +72,23 @@ export async function updateTodo(id: number, formData: FormData) {
   revalidatePath('/')
 }
 
-// Generate a 6-digit OTP
-function generateOtp() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+export async function getTodos(userId: number) {
+  const database = getDB(getCloudflareContext().env.DB)
+
+  const todos = await database
+    .select()
+    .from(schema.todos)
+    .where(eq(schema.todos.userId, userId))
+    .orderBy(desc(schema.todos.createdAt))
+
+  return todos
 }
 
 export async function requestOtp(email: string) {
   const database = getDB(getCloudflareContext().env.DB)
   const otp = generateOtp()
   const hashedOtp = await bcrypt.hash(otp, 10)
-  
+
   await database.insert(schema.otps).values({
     email,
     otp: hashedOtp,
@@ -100,7 +109,7 @@ export async function requestOtp(email: string) {
 
 export async function verifyOtp(email: string, otp: string) {
   const database = getDB(getCloudflareContext().env.DB)
-  
+
   // Get the latest OTP for the email
   const [otpRecord] = await database
     .select()
@@ -130,4 +139,24 @@ export async function verifyOtp(email: string, otp: string) {
   await database.delete(schema.otps).where(eq(schema.otps.id, otpRecord.id))
 
   return { success: true }
+}
+
+export async function getUserByEmail(email: string) {
+  const database = getDB(getCloudflareContext().env.DB)
+
+  const [user] = await database
+    .select()
+    .from(schema.users)
+    .where(eq(schema.users.email, email))
+
+  if (user) {
+    return {
+      id: user.id.toString(), // Convert numeric ID to string
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified,
+    }
+  }
+
+  return null
 }
