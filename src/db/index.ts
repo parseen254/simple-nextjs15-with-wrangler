@@ -3,11 +3,11 @@ import { eq, like } from "drizzle-orm";
 import * as schema from "./schema/schema";
 
 // Define the type for our DB
-export type DB = ReturnType<typeof createDB>;
+export type DB = ReturnType<typeof getDB>;
 
 // Create a function to initialize the drizzle client with the D1 binding
-export function createDB(d1: D1Database) {
-  return drizzle(d1, { schema });
+export function getDB(db: D1Database) {
+  return drizzle(db, { schema });
 }
 
 // Todo type based on the schema
