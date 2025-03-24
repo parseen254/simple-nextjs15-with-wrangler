@@ -1,0 +1,8 @@
+# Load .env.development* files when running `wrangler dev`
+# Next.js Environment
+NEXTJS_ENV=development
+# AWS SES Configuration
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+AWS_REGION=your_aws_region
+AWS_SES_FROM_EMAIL=your_verified_ses_email
