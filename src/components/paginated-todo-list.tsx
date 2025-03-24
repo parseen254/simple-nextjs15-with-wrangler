@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Todo } from "@/db"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { 
@@ -246,8 +246,7 @@ export function PaginatedTodoList({ todos, currentUserId }: PaginatedTodoListPro
           </div>
         </div>
       </CardHeader>
-      
-      <CardContent className="pt-6">
+      <CardContent className="flex-1 pt-6">
         {filteredTodos.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             No todos match your search criteria. Try adjusting your filters.
@@ -258,9 +257,11 @@ export function PaginatedTodoList({ todos, currentUserId }: PaginatedTodoListPro
               todos={currentItems} 
               currentUserId={currentUserId} 
             />
-            
-            {/* Pagination controls */}
-            <div className="flex items-center justify-between mt-4">
+          </>
+        )}
+      </CardContent>
+      <CardFooter className="bottom-0 bg-card">
+        <div className="flex items-center justify-center gap-12 mt-4 w-full">
               <div className="text-sm text-muted-foreground">
                 Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredTodos.length)} of {filteredTodos.length} todos
               </div>
@@ -273,7 +274,7 @@ export function PaginatedTodoList({ todos, currentUserId }: PaginatedTodoListPro
                     setCurrentPage(1)
                   }}
                 >
-                  <SelectTrigger className="w-[100px]">
+                  <SelectTrigger className="w-fit">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -304,9 +305,7 @@ export function PaginatedTodoList({ todos, currentUserId }: PaginatedTodoListPro
                 </div>
               </div>
             </div>
-          </>
-        )}
-      </CardContent>
+      </CardFooter>
     </Card>
   )
 }

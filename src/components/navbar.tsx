@@ -38,10 +38,10 @@ export function Navbar({ user }: NavbarProps) {
                             <DropdownMenuTrigger asChild>
                                 <Button 
                                   variant="ghost" 
-                                  className="relative border-3 h-10 w-10 rounded-full"
+                                  className="relative border h-12 w-12 rounded-full shadow-lg"
                                   aria-label="User menu"
                                 >
-                                    <UserIcon className="h-10 w-10" />
+                                    <UserIcon className="size-5" />
                                   
                                 </Button>
                             </DropdownMenuTrigger>

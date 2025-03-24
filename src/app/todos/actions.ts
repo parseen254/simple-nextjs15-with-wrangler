@@ -51,7 +51,6 @@ export async function addTodo(formData: FormData) {
     updatedAt: new Date()
   })
 
-  revalidatePath('/')
   revalidatePath('/todos')
 }
 

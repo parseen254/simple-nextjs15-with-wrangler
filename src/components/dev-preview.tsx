@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Bell } from 'lucide-react'
+import { Bell, MailIcon } from 'lucide-react'
 import { Button } from './ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Card } from './ui/card'
@@ -71,11 +71,11 @@ export function DevPreview() {
         <>
             <Button
                 onClick={() => handleOpenChange(true)}
-                className="fixed bottom-4 right-4 rounded-full p-3 shadow-lg"
-                size="icon"
+                className="fixed top-4 h-12 w-12 right-4 rounded-full p-3 shadow-lg"
+                size="lg"
                 variant="outline"
             >
-                <Bell className="h-6 w-6" />
+                <MailIcon className="size-5" />
                 {unreadCount > 0 && (
                     <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-white">
                         {unreadCount}
