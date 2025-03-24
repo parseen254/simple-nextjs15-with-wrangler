@@ -1,17 +1,18 @@
+import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name"),
   email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "timestamp" }),
+  emailVerified: integer("email_verified", { mode: "boolean" }),
   password: text("password"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
-    .$default(() => new Date()),
+    .$default(() => sql`CURRENT_TIMESTAMP`),
   updatedAt: integer("updated_at", { mode: "timestamp" })
     .notNull()
-    .$default(() => new Date()),
+    .$default(() => sql`CURRENT_TIMESTAMP`),
 });
 
 export const verificationTokens = sqliteTable("verification_tokens", {
@@ -29,10 +30,10 @@ export const todos = sqliteTable("todos", {
   userId: integer("user_id").notNull().references(() => users.id),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
-    .$default(() => new Date()),
+    .$default(() => sql`CURRENT_TIMESTAMP`),
   updatedAt: integer("updated_at", { mode: "timestamp" })
     .notNull()
-    .$default(() => new Date()),
+    .$default(() => sql`CURRENT_TIMESTAMP`),
 });
 
 export const otps = sqliteTable("otps", {
@@ -41,5 +42,20 @@ export const otps = sqliteTable("otps", {
   otp: text("otp").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
-    .$default(() => new Date()),
+    .$default(() => sql`CURRENT_TIMESTAMP`),
+  expiresAt: integer("expires_at", { mode: "timestamp" })
+    .notNull()
+    .$default(() => sql`datetime(CURRENT_TIMESTAMP, '+10 minutes')`),
+});
+
+export const devMessages = sqliteTable("dev_messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  to: text("to").notNull(),
+  subject: text("subject").notNull(),
+  content: text("content").notNull(),
+  type: text("type", { enum: ["email", "sms", "whatsapp"] }).notNull().default("email"),
+  read: integer("read", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$default(() => sql`CURRENT_TIMESTAMP`),
 });

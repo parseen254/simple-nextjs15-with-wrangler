@@ -1,6 +1,6 @@
 'use client'
 
-import { deleteTodo, toggleTodo } from "@/app/actions"
+import { deleteTodo, toggleTodo } from "@/app/todos/actions"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"

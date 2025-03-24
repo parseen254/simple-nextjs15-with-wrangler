@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { NextAuthProvider } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { auth } from "@/lib/auth";
+import { DevPreview } from "@/components/dev-preview";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default async function RootLayout({
           <main className="flex-1 flex flex-col">
             {children}
           </main>
+          <DevPreview />
           <Toaster />
         </NextAuthProvider>
       </body>

@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { requestOtp } from '@/app/actions';
+import { requestOtp } from '@/app/signin/actions';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { LockIcon } from 'lucide-react';

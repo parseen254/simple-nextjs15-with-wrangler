@@ -53,20 +53,20 @@
 		"zod": "^3.24.2"
 	},
 	"devDependencies": {
-		"@eslint/eslintrc": "^3",
-		"@opennextjs/cloudflare": "0.5.x",
-		"@tailwindcss/postcss": "^4",
-		"@types/node": "^20",
-		"@types/react": "^19",
-		"@types/react-dom": "^19",
+		"@eslint/eslintrc": "^3.3.1",
+		"@opennextjs/cloudflare": "0.5.12",
+		"@tailwindcss/postcss": "^4.0.15",
+		"@types/node": "^20.17.25",
+		"@types/react": "^19.0.12",
+		"@types/react-dom": "^19.0.4",
 		"drizzle-kit": "^0.30.5",
 		"drizzle-orm": "^0.41.0",
-		"eslint": "^9",
+		"eslint": "^9.23.0",
 		"eslint-config-next": "15.2.3",
-		"prettier": "^3.5.3",
+		"prettier": "3.4.2",
 		"tailwind-merge": "^3.0.2",
-		"tailwindcss": "^4",
-		"typescript": "^5",
+		"tailwindcss": "^4.0.15",
+		"typescript": "^5.8.2",
 		"wrangler": "^4.4.0"
 	}
 }

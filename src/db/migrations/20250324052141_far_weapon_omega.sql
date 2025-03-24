@@ -1,0 +1,1 @@
+ALTER TABLE `otps` ADD `expires_at` integer NOT NULL;

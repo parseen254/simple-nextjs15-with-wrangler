@@ -8,6 +8,7 @@ import { AddTodoForm } from "@/components/add-todo-form"
 import { TodoList } from "@/components/todo-list"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { eq } from "drizzle-orm"
+import { Label } from '@/components/ui/label'
 
 export default async function UserProfile() {
   const session = await auth();
@@ -47,6 +48,12 @@ export default async function UserProfile() {
               <p><strong>Name:</strong> {user.name || 'Not provided'}</p>
               <p><strong>Email:</strong> {user.email}</p>
               <p><strong>Member since:</strong> {new Date(user.createdAt).toLocaleDateString()}</p>
+              <div>
+                <Label>Last Updated</Label>
+                <p className="text-sm text-muted-foreground">
+                  {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Unknown'}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

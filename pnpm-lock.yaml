@@ -88,22 +88,22 @@ importers:
         version: 3.24.2
     devDependencies:
       '@eslint/eslintrc':
-        specifier: ^3
+        specifier: ^3.3.1
         version: 3.3.1
       '@opennextjs/cloudflare':
-        specifier: 0.5.x
+        specifier: 0.5.12
         version: 0.5.12(wrangler@4.4.0(@cloudflare/workers-types@4.20250321.0))
       '@tailwindcss/postcss':
-        specifier: ^4
+        specifier: ^4.0.15
         version: 4.0.15
       '@types/node':
-        specifier: ^20
+        specifier: ^20.17.25
         version: 20.17.25
       '@types/react':
-        specifier: ^19
+        specifier: ^19.0.12
         version: 19.0.12
       '@types/react-dom':
-        specifier: ^19
+        specifier: ^19.0.4
         version: 19.0.4(@types/react@19.0.12)
       drizzle-kit:
         specifier: ^0.30.5
@@ -112,22 +112,22 @@ importers:
         specifier: ^0.41.0
         version: 0.41.0(@cloudflare/workers-types@4.20250321.0)(gel@2.0.1)
       eslint:
-        specifier: ^9
+        specifier: ^9.23.0
         version: 9.23.0(jiti@2.4.2)
       eslint-config-next:
         specifier: 15.2.3
         version: 15.2.3(eslint@9.23.0(jiti@2.4.2))(typescript@5.8.2)
       prettier:
-        specifier: ^3.5.3
-        version: 3.5.3
+        specifier: 3.4.2
+        version: 3.4.2
       tailwind-merge:
         specifier: ^3.0.2
         version: 3.0.2
       tailwindcss:
-        specifier: ^4
+        specifier: ^4.0.15
         version: 4.0.15
       typescript:
-        specifier: ^5
+        specifier: ^5.8.2
         version: 5.8.2
       wrangler:
         specifier: ^4.4.0
@@ -3082,6 +3082,15 @@ packages:
       supports-color:
         optional: true
 
+  debug@4.3.7:
+    resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+
   debug@4.4.0:
     resolution: {integrity: sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==}
     engines: {node: '>=6.0'}
@@ -4436,11 +4445,6 @@ packages:
 
   prettier@3.4.2:
     resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
-    engines: {node: '>=14'}
-    hasBin: true
-
-  prettier@3.5.3:
-    resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -8497,6 +8501,10 @@ snapshots:
     dependencies:
       ms: 2.1.2
 
+  debug@4.3.7:
+    dependencies:
+      ms: 2.1.3
+
   debug@4.4.0:
     dependencies:
       ms: 2.1.3
@@ -8607,7 +8615,7 @@ snapshots:
       base64id: 2.0.0
       cookie: 0.7.2
       cors: 2.8.5
-      debug: 4.3.6
+      debug: 4.3.7
       engine.io-parser: 5.2.3
       ws: 8.17.1
     transitivePeerDependencies:
@@ -10019,8 +10027,6 @@ snapshots:
 
   prettier@3.4.2: {}
 
-  prettier@3.5.3: {}
-
   pretty-format@3.8.0: {}
 
   printable-characters@1.0.42: {}
@@ -10363,7 +10369,7 @@ snapshots:
 
   socket.io-adapter@2.5.5:
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.7
       ws: 8.17.1
     transitivePeerDependencies:
       - bufferutil
@@ -10373,7 +10379,7 @@ snapshots:
   socket.io-parser@4.2.4:
     dependencies:
       '@socket.io/component-emitter': 3.1.2
-      debug: 4.3.6
+      debug: 4.3.7
     transitivePeerDependencies:
       - supports-color
 
@@ -10382,7 +10388,7 @@ snapshots:
       accepts: 1.3.8
       base64id: 2.0.0
       cors: 2.8.5
-      debug: 4.3.6
+      debug: 4.3.7
       engine.io: 6.6.4
       socket.io-adapter: 2.5.5
       socket.io-parser: 4.2.4

@@ -1,6 +1,7 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { render } from '@react-email/render';
 import OtpEmail from '@/emails/otp-email';
+import { saveDevMessage } from '@/app/dev/actions';
 
 const ses = new SESClient({
   region: process.env.AWS_REGION || "us-east-1",
@@ -23,6 +24,19 @@ export async function sendEmail({
 }) {
   const emailHtml = await render(OtpEmail(props));
 
+  // In development, intercept emails and save to dev messages
+  if (process.env.NODE_ENV === 'development') {
+    await saveDevMessage({
+      to,
+      subject,
+      content: emailHtml,
+      type: 'email',
+      metadata: { props } // Store original props for potential debugging
+    });
+    return true;
+  }
+
+  // In production, send actual email via AWS SES
   const params = {
     Source: process.env.AWS_SES_FROM_EMAIL,
     Destination: {

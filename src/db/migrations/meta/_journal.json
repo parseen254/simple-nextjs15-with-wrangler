@@ -8,6 +8,34 @@
       "when": 1742778456778,
       "tag": "20250324010736_parallel_sentinels",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1742792192685,
+      "tag": "20250324045632_common_pet_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1742793701586,
+      "tag": "20250324052141_far_weapon_omega",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1742794650096,
+      "tag": "20250324053730_bitter_felicia_hardy",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1742794697180,
+      "tag": "20250324053817_nifty_arachne",
+      "breakpoints": true
     }
   ]
 }
