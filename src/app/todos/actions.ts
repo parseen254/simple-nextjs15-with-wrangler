@@ -1,11 +1,27 @@
 'use server'
 
-import { getDB } from '@/db'
-import { revalidatePath } from 'next/cache'
+import { getDB, getTodoWithUserInfo, updateTodo as updateTodoInDb } from '@/db'
 import { eq } from 'drizzle-orm'
 import * as schema from '@/db/schema/schema'
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { auth } from '@/lib/auth'
+import { todoSchema, todoUpdateSchema, todoToggleSchema } from '@/lib/zod'
+import { revalidatePath } from 'next/cache'
+
+/**
+ * Revalidate multiple paths at once
+ */
+export async function revalidateMultiplePaths(paths: string[]) {
+  paths.forEach(path => revalidatePath(path))
+}
+
+/**
+ * Revalidate todo-related paths
+ */
+export async function revalidateTodoPaths() {
+  revalidatePath('/')
+  revalidatePath('/todos')
+}
 
 // Helper function to check if a user owns a todo
 async function checkTodoOwnership(todoId: number, userId: number) {
@@ -32,47 +48,28 @@ export async function addTodo(formData: FormData) {
     throw new Error('Unauthorized: You must be signed in to create todos')
   }
 
-  const title = formData.get('title') as string
-  const description = formData.get('description') as string
-  const priority = formData.get('priority') as 'low' | 'medium' | 'high'
-  
-  if (!title) {
-    throw new Error('Title is required')
+  const data = {
+    title: formData.get('title'),
+    description: formData.get('description'),
+    priority: formData.get('priority'),
   }
 
+  // Validate input
+  const validated = todoSchema.parse(data)
+
   const database = getDB(getCloudflareContext().env.DB)
-  const result = await database.insert(schema.todos)
+  const todo = await database.insert(schema.todos)
     .values({
-      title,
-      description,
-      priority: priority || 'medium',
-      completed: false,
+      ...validated,
       userId: +session.user.id,
       createdAt: new Date(),
-      updatedAt: new Date()
-    })
-    .returning()
+      updatedAt: new Date(),
+    }).returning()
 
-  // Get the created todo with user information
-  const todo = await database.select({
-    id: schema.todos.id,
-    title: schema.todos.title,
-    description: schema.todos.description,
-    priority: schema.todos.priority,
-    completed: schema.todos.completed,
-    createdAt: schema.todos.createdAt,
-    userId: schema.todos.userId,
-    userName: schema.users.name,
-    userEmail: schema.users.email,
-  })
-  .from(schema.todos)
-  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
-  .where(eq(schema.todos.id, result[0].id))
-  .limit(1)
+  const EnhancedTodo = await getTodoWithUserInfo(database, todo[0].id)
 
-  revalidatePath('/')
-  revalidatePath('/todos')
-  return todo[0]
+  revalidateTodoPaths()
+  return EnhancedTodo[0]
 }
 
 export async function toggleTodo(id: number, completed: boolean) {
@@ -81,6 +78,9 @@ export async function toggleTodo(id: number, completed: boolean) {
     throw new Error('Unauthorized: You must be signed in to update todos')
   }
 
+  // Validate input
+  todoToggleSchema.parse({ completed })
+
   // Verify ownership
   await checkTodoOwnership(id, +session.user.id)
 
@@ -88,24 +88,11 @@ export async function toggleTodo(id: number, completed: boolean) {
   await database.update(schema.todos)
     .set({ completed, updatedAt: new Date() })
     .where(eq(schema.todos.id, id))
-  
+
   // Get the updated todo with user information
-  const todo = await database.select({
-    id: schema.todos.id,
-    title: schema.todos.title,
-    description: schema.todos.description,
-    priority: schema.todos.priority,
-    completed: schema.todos.completed,
-    createdAt: schema.todos.createdAt,
-    userId: schema.todos.userId,
-    userName: schema.users.name,
-    userEmail: schema.users.email,
-  })
-  .from(schema.todos)
-  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
-  .where(eq(schema.todos.id, id))
-  .limit(1)
-  
+  const todo = await getTodoWithUserInfo(database, id)
+
+  revalidateTodoPaths()
   return todo[0]
 }
 
@@ -121,9 +108,8 @@ export async function deleteTodo(id: number) {
   const database = getDB(getCloudflareContext().env.DB)
   await database.delete(schema.todos)
     .where(eq(schema.todos.id, id))
-  
-  revalidatePath('/')
-  revalidatePath('/todos')
+
+  revalidateTodoPaths()
 }
 
 export async function updateTodo(id: number, formData: FormData) {
@@ -135,43 +121,27 @@ export async function updateTodo(id: number, formData: FormData) {
   // Verify ownership
   await checkTodoOwnership(id, +session.user.id)
 
-  const title = formData.get('title') as string
-  const description = formData.get('description') as string
-  const priority = formData.get('priority') as 'low' | 'medium' | 'high'
-  
-  if (!title) {
-    throw new Error('Title is required')
+  const data = {
+    title: formData.get('title'),
+    description: formData.get('description'),
+    priority: formData.get('priority'),
   }
+
+  // Validate input
+  const validated = todoUpdateSchema.parse(data)
 
   const database = getDB(getCloudflareContext().env.DB)
   await database.update(schema.todos)
-    .set({ 
-      title, 
-      description, 
-      priority: priority || 'medium', 
-      updatedAt: new Date() 
+    .set({
+      ...validated,
+      updatedAt: new Date()
     })
     .where(eq(schema.todos.id, id))
 
   // Get the updated todo with user information
-  const todo = await database.select({
-    id: schema.todos.id,
-    title: schema.todos.title,
-    description: schema.todos.description,
-    priority: schema.todos.priority,
-    completed: schema.todos.completed,
-    createdAt: schema.todos.createdAt,
-    userId: schema.todos.userId,
-    userName: schema.users.name,
-    userEmail: schema.users.email,
-  })
-  .from(schema.todos)
-  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
-  .where(eq(schema.todos.id, id))
-  .limit(1)
-  
-  revalidatePath('/')
-  revalidatePath('/todos')
+  const todo = await getTodoWithUserInfo(database, id)
+
+  revalidateTodoPaths()
   return todo[0]
 }
 
@@ -184,12 +154,13 @@ export async function getTodos(userId: number) {
     priority: schema.todos.priority,
     completed: schema.todos.completed,
     createdAt: schema.todos.createdAt,
+    updatedAt: schema.todos.updatedAt,
     userId: schema.todos.userId,
     userName: schema.users.name,
     userEmail: schema.users.email,
   })
-  .from(schema.todos)
-  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
-  .where(eq(schema.todos.userId, userId))
-  .orderBy(schema.todos.createdAt)
+    .from(schema.todos)
+    .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
+    .where(eq(schema.todos.userId, userId))
+    .orderBy(schema.todos.createdAt)
 }

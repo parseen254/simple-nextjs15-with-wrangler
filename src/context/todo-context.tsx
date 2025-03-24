@@ -1,33 +1,25 @@
 'use client'
 
-import React, { createContext, useContext, useReducer, useCallback } from 'react'
-import { Todo } from '@/db'
-import { addTodo, deleteTodo, toggleTodo, updateTodo } from '@/app/todos/actions'
+import { createContext, useContext, useReducer, type ReactNode } from 'react'
+import { addTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from '@/app/todos/actions'
 import { toast } from 'sonner'
+import type { Todo } from '@/db'
 
-// Enhanced Todo type with user information
-export type EnhancedTodo = {
-  id: number
-  title: string
-  description: string | null
-  priority: string
-  completed: boolean
-  createdAt: Date
-  userId: number
+export type EnhancedTodo = Todo & {
   userName: string | null
-  userEmail: string
+  userEmail: string | null
 }
 
 type TodoState = {
   todos: EnhancedTodo[]
 }
 
-type TodoAction = 
+type TodoAction =
   | { type: 'SET_TODOS'; payload: EnhancedTodo[] }
   | { type: 'ADD_TODO'; payload: EnhancedTodo }
   | { type: 'UPDATE_TODO'; payload: EnhancedTodo }
-  | { type: 'TOGGLE_TODO'; payload: { id: number; completed: boolean } }
   | { type: 'DELETE_TODO'; payload: number }
+  | { type: 'TOGGLE_TODO'; payload: { id: number; completed: boolean } }
 
 type TodoContextType = {
   todos: EnhancedTodo[]
@@ -43,26 +35,35 @@ const TodoContext = createContext<TodoContextType | undefined>(undefined)
 function todoReducer(state: TodoState, action: TodoAction): TodoState {
   switch (action.type) {
     case 'SET_TODOS':
-      return { todos: action.payload }
+      return {
+        ...state,
+        todos: action.payload,
+      }
     case 'ADD_TODO':
-      return { todos: [...state.todos, action.payload] }
+      return {
+        ...state,
+        todos: [...state.todos, action.payload],
+      }
     case 'UPDATE_TODO':
       return {
-        todos: state.todos.map(todo => 
+        ...state,
+        todos: state.todos.map((todo) =>
           todo.id === action.payload.id ? action.payload : todo
-        )
-      }
-    case 'TOGGLE_TODO':
-      return {
-        todos: state.todos.map(todo => 
-          todo.id === action.payload.id 
-            ? { ...todo, completed: action.payload.completed }
-            : todo
-        )
+        ),
       }
     case 'DELETE_TODO':
       return {
-        todos: state.todos.filter(todo => todo.id !== action.payload)
+        ...state,
+        todos: state.todos.filter((todo) => todo.id !== action.payload),
+      }
+    case 'TOGGLE_TODO':
+      return {
+        ...state,
+        todos: state.todos.map((todo) =>
+          todo.id === action.payload.id
+            ? { ...todo, completed: action.payload.completed }
+            : todo
+        ),
       }
     default:
       return state
@@ -70,14 +71,14 @@ function todoReducer(state: TodoState, action: TodoAction): TodoState {
 }
 
 export function TodoProvider({ children, initialTodos = [] }: { 
-  children: React.ReactNode
+  children: ReactNode
   initialTodos?: EnhancedTodo[]
 }) {
   const [state, dispatch] = useReducer(todoReducer, { todos: initialTodos })
 
-  const setInitialTodos = useCallback((todos: EnhancedTodo[]) => {
+  const setInitialTodos = (todos: EnhancedTodo[]) => {
     dispatch({ type: 'SET_TODOS', payload: todos })
-  }, [])
+  }
 
   const handleAddTodo = async (formData: FormData) => {
     try {
@@ -87,55 +88,96 @@ export function TodoProvider({ children, initialTodos = [] }: {
         toast.success('Todo added successfully')
       }
     } catch (error) {
-      toast.error('Failed to add todo')
+      toast.error(error instanceof Error ? error.message : 'Failed to add todo')
+      throw error
     }
   }
 
   const handleUpdateTodo = async (id: number, formData: FormData) => {
     try {
+      // Optimistically update the todo
+      const title = formData.get('title') as string
+      const description = formData.get('description') as string
+      const priority = formData.get('priority') as Todo['priority']
+      const optimisticTodo = state.todos.find(t => t.id === id)
+      
+      if (optimisticTodo) {
+        const updatedTodo = { 
+          ...optimisticTodo, 
+          title, 
+          description, 
+          priority,
+          updatedAt: new Date()
+        }
+        dispatch({ type: 'UPDATE_TODO', payload: updatedTodo })
+      }
+
       const response = await updateTodo(id, formData)
       if (response) {
         dispatch({ type: 'UPDATE_TODO', payload: response })
         toast.success('Todo updated successfully')
       }
     } catch (error) {
-      toast.error('Failed to update todo')
+      // Revert optimistic update on error
+      const originalTodo = state.todos.find(t => t.id === id)
+      if (originalTodo) {
+        dispatch({ type: 'UPDATE_TODO', payload: originalTodo })
+      }
+      toast.error(error instanceof Error ? error.message : 'Failed to update todo')
+      throw error
     }
   }
 
   const handleToggleTodo = async (id: number, completed: boolean) => {
     try {
+      // Optimistically update the todo
+      dispatch({ type: 'TOGGLE_TODO', payload: { id, completed } })
+
       const response = await toggleTodo(id, completed)
       if (response) {
-        dispatch({ type: 'TOGGLE_TODO', payload: { id, completed } })
+        dispatch({ type: 'UPDATE_TODO', payload: response })
         toast.success('Todo updated successfully')
       }
     } catch (error) {
-      toast.error('Failed to update todo')
+      // Revert optimistic update on error
+      dispatch({ type: 'TOGGLE_TODO', payload: { id, completed: !completed } })
+      toast.error(error instanceof Error ? error.message : 'Failed to update todo')
+      throw error
     }
   }
 
   const handleDeleteTodo = async (id: number) => {
     try {
-      await deleteTodo(id)
+      // Store the todo before deletion for potential recovery
+      const todoToDelete = state.todos.find(t => t.id === id)
+      
+      // Optimistically remove the todo
       dispatch({ type: 'DELETE_TODO', payload: id })
+
+      await deleteTodo(id)
       toast.success('Todo deleted successfully')
     } catch (error) {
-      toast.error('Failed to delete todo')
+      // Recover the todo on error
+      const todoToRecover = state.todos.find(t => t.id === id)
+      if (todoToRecover) {
+        dispatch({ type: 'ADD_TODO', payload: todoToRecover })
+      }
+      toast.error(error instanceof Error ? error.message : 'Failed to delete todo')
+      throw error
     }
   }
 
-  const value = {
-    todos: state.todos,
-    setInitialTodos,
-    handleAddTodo,
-    handleUpdateTodo,
-    handleToggleTodo,
-    handleDeleteTodo
-  }
-
   return (
-    <TodoContext.Provider value={value}>
+    <TodoContext.Provider
+      value={{
+        todos: state.todos,
+        setInitialTodos,
+        handleAddTodo,
+        handleUpdateTodo,
+        handleToggleTodo,
+        handleDeleteTodo,
+      }}
+    >
       {children}
     </TodoContext.Provider>
   )

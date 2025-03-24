@@ -4,6 +4,10 @@ import { useState, useCallback } from "react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { EditTodoForm } from "./edit-todo-form"
+import { formatDistanceToNow } from "date-fns"
 import { 
   Select,
   SelectContent,
@@ -12,16 +16,31 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { debounce } from "@/lib/utils"
-import { Search, CalendarIcon, Users, Star, CheckCircle2, FilterX, UserX, StickerIcon } from "lucide-react"
-import { EnhancedTodoList } from "./enhanced-todo-list"
+import { 
+  Search, 
+  CalendarIcon, 
+  Users, 
+  Star, 
+  CheckCircle2, 
+  FilterX, 
+  UserX, 
+  StickerIcon,
+  User,
+  Clock,
+  Pencil,
+  Trash2
+} from "lucide-react"
 import { useTodos } from "@/context/todo-context"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { Todo } from "@/db"
 
 type PaginatedTodoListProps = {
   currentUserId: string | undefined
 }
 
 export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
-  const { todos } = useTodos()
+  const { todos, handleToggleTodo, handleDeleteTodo } = useTodos()
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("all")
   const [userFilter, setUserFilter] = useState("all")
@@ -29,6 +48,10 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
   const [completionFilter, setCompletionFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState("10")
+  const [isUpdating, setIsUpdating] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState<number | null>(null)
+  const [open, setOpen] = useState(false)
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
@@ -36,6 +59,11 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
   }
 
   const debouncedSearch = debounce(handleSearchChange, 300)
+
+  // Check if the current user is the owner of a todo
+  const isOwner = (todo: Todo) => {
+    return currentUserId !== undefined && +currentUserId === todo.userId
+  }
 
   // Generate unique users from todos using a Map to ensure uniqueness by userId
   const uniqueUsers = Array.from(
@@ -81,6 +109,22 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
   // Check if any filters are active
   const hasActiveFilters = dateFilter !== "all" || userFilter !== "all" || 
     priorityFilter !== "all" || completionFilter !== "all" || searchTerm !== ""
+
+  if (todos.length === 0) {
+    return (
+      <Card className="w-full h-full">
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <StickerIcon className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium">No todos yet</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              Create your first todo using the form on the right
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card className="w-full h-full">
@@ -205,15 +249,7 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
       </CardHeader>
 
       <CardContent>
-        {todos.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <StickerIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">No todos yet</h3>
-            <p className="text-sm text-muted-foreground mt-2">
-              Create your first todo using the form on the right
-            </p>
-          </div>
-        ) : filteredTodos.length === 0 ? (
+        {filteredTodos.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <FilterX className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium">No matching todos</h3>
@@ -222,7 +258,138 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
             </p>
           </div>
         ) : (
-          <EnhancedTodoList todos={currentTodos} currentUserId={currentUserId} />
+          <div className="space-y-4">
+            {currentTodos.map((todo) => (
+              <div
+                key={todo.id}
+                className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg"
+              >
+                <div className="flex items-start gap-4 mb-2 md:mb-0">
+                  <Checkbox
+                    id={`todo-${todo.id}`}
+                    checked={todo.completed}
+                    onCheckedChange={async (checked) => {
+                      if (!isOwner(todo)) {
+                        toast.error("You can only update your own todos")
+                        return
+                      }
+                      try {
+                        setIsUpdating(todo.id)
+                        await handleToggleTodo(todo.id, checked as boolean)
+                      } catch (error) {
+                        // Error is handled in the context
+                      } finally {
+                        setIsUpdating(null)
+                      }
+                    }}
+                    disabled={!isOwner(todo) || isUpdating === todo.id}
+                    aria-label={`Mark "${todo.title}" as ${todo.completed ? 'incomplete' : 'complete'}`}
+                  />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <label
+                        htmlFor={`todo-${todo.id}`}
+                        className={cn(
+                          todo.completed ? "line-through text-muted-foreground" : "font-medium",
+                          "cursor-pointer"
+                        )}
+                      >
+                        {todo.title}
+                      </label>
+                      <span className={cn(
+                        "text-xs px-2 py-0.5 rounded-full",
+                        {
+                          'bg-red-100 text-red-700': todo.priority === 'high',
+                          'bg-yellow-100 text-yellow-700': todo.priority === 'medium',
+                          'bg-green-100 text-green-700': todo.priority === 'low'
+                        }
+                      )}>
+                        {todo.priority}
+                      </span>
+                    </div>
+                    {todo.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {todo.description}
+                      </p>
+                    )}
+                    <div className="flex items-center text-xs text-muted-foreground gap-3 mt-1">
+                      <div className="flex items-center gap-1" title="Created by">
+                        <User className="h-3 w-3" />
+                        <span>{todo.userName || todo.userEmail}</span>
+                      </div>
+                      <div className="flex items-center gap-1" title="Created">
+                        <Clock className="h-3 w-3" />
+                        <span>{formatDistanceToNow(new Date(todo.createdAt), { addSuffix: true })}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 self-end md:self-auto">
+                  <Dialog open={open && selectedTodo?.id === todo.id} onOpenChange={(isOpen) => {
+                    setOpen(isOpen)
+                    if (!isOpen) setSelectedTodo(null)
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          if (!isOwner(todo)) {
+                            toast.error("You can only edit your own todos")
+                            return
+                          }
+                          setSelectedTodo(todo)
+                          setOpen(true)
+                        }}
+                        disabled={!isOwner(todo)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Edit Todo</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit Todo</DialogTitle>
+                      </DialogHeader>
+                      {selectedTodo && (
+                        <EditTodoForm
+                          todo={selectedTodo}
+                          onClose={() => {
+                            setOpen(false)
+                            setSelectedTodo(null)
+                          }}
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!isOwner(todo) || isDeleting === todo.id}
+                    onClick={async () => {
+                      if (!isOwner(todo)) {
+                        toast.error("You can only delete your own todos")
+                        return
+                      }
+                      try {
+                        setIsDeleting(todo.id)
+                        await handleDeleteTodo(todo.id)
+                        toast.success("Todo deleted successfully")
+                      } catch (error) {
+                        toast.error("Failed to delete todo")
+                      } finally {
+                        setIsDeleting(null)
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete</span>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </CardContent>
 
