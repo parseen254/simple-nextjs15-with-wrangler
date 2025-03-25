@@ -24,17 +24,7 @@ export async function sendEmail({
 }) {
   const emailHtml = await render(OtpEmail(props));
 
-  console.log("Sending email to:", to);
-  console.log("Email subject:", subject);
-  console.log("SES client", ses);
-  console.log({
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-    }
-  })
-
-  // // In development, intercept emails and save to dev messages
+  // In development, intercept emails and save to dev messages
   if (process.env.NODE_ENV === 'development') {
     await saveDevMessage({
       to,
