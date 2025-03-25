@@ -35,16 +35,16 @@ export async function sendEmail({
   })
 
   // // In development, intercept emails and save to dev messages
-  // if (process.env.NODE_ENV === 'development') {
-  //   await saveDevMessage({
-  //     to,
-  //     subject,
-  //     content: emailHtml,
-  //     type: 'email',
-  //     metadata: { props } // Store original props for potential debugging
-  //   });
-  //   return true;
-  // }
+  if (process.env.NODE_ENV === 'development') {
+    await saveDevMessage({
+      to,
+      subject,
+      content: emailHtml,
+      type: 'email',
+      metadata: { props } // Store original props for potential debugging
+    });
+    return true;
+  }
 
   // In production, send actual email via AWS SES
   const params = {
