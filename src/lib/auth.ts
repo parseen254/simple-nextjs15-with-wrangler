@@ -13,7 +13,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth(() => {
     // because NextAuth doesn't support async configuration
     // and we need to use the DB in the adapter
     const db = getDB(getCloudflareContext().env.DB)
-    
+
     return {
         adapter: DrizzleAdapter(db) as Adapter,
         providers: [
@@ -29,15 +29,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth(() => {
                         if (!credentials) {
                             throw new Error("Please provide your email and verification code")
                         }
-                        
+
                         // Parse and validate credentials
                         const { email, otp } = await OtpZodSchema.parseAsync(credentials).catch(err => {
                             throw new Error("Invalid verification code format")
                         })
-                        
+
                         // Verify OTP
                         const result = await verifyOtp(email, otp)
-                        
+
                         if (!result.success) {
                             throw new Error("Invalid verification code")
                         }
@@ -47,21 +47,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth(() => {
                         if (!user) {
                             throw new Error("Failed to create user account")
                         }
-                        
+
                         return {
                             ...user,
                             id: user.id.toString(),
                         }
                     } catch (error) {
                         console.error("Authentication error:", error)
-                        const message = error instanceof Error 
-                            ? error.message 
+                        const message = error instanceof Error
+                            ? error.message
                             : "Authentication failed. Please try again."
                         throw new Error(message)
                     }
                 }
             }),
         ],
+        trustHost: true,
         session: {
             strategy: "jwt",
             maxAge: 12 * 60 * 60, // 12 hours

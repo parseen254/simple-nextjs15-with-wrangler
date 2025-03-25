@@ -10,13 +10,12 @@ import { Label } from '@/components/ui/label'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import Image from "next/image"
 import { updateProfile, splitFullName } from "./actions"
 
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const session = await auth();
 
@@ -36,7 +35,7 @@ export default async function ProfilePage({
     .where(eq(schema.users.id, parseInt(userId || '')))
     .then(users => users[0]);
 
-  const { firstName, lastName } = await splitFullName(user.name);
+  const { firstName, lastName } = await splitFullName(user?.name);
 
   return (
     <main className="container mx-auto py-8">
@@ -143,16 +142,16 @@ export default async function ProfilePage({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Full Name</Label>
-                      <p className="text-lg font-medium">{user.name}</p>
+                      <p className="text-lg font-medium">{user?.name}</p>
                     </div>
                     <div className="space-y-2">
                       <Label>Email</Label>
-                      <p className="text-lg font-medium">{user.email}</p>
+                      <p className="text-lg font-medium">{user?.email}</p>
                     </div>
                     <div className="space-y-2">
                       <Label>Member since</Label>
                       <p className="text-lg font-medium">
-                        {new Date(user.createdAt).toLocaleDateString()}
+                        {new Date(user?.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>

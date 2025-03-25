@@ -13,28 +13,38 @@ const ses = new SESClient({
 
 type OtpEmailProps = Parameters<typeof OtpEmail>[0];
 
-export async function sendEmail({ 
-  to, 
-  subject, 
-  props 
-}: { 
-  to: string; 
-  subject: string; 
+export async function sendEmail({
+  to,
+  subject,
+  props
+}: {
+  to: string;
+  subject: string;
   props: OtpEmailProps;
 }) {
   const emailHtml = await render(OtpEmail(props));
 
-  // In development, intercept emails and save to dev messages
-  if (process.env.NODE_ENV === 'development') {
-    await saveDevMessage({
-      to,
-      subject,
-      content: emailHtml,
-      type: 'email',
-      metadata: { props } // Store original props for potential debugging
-    });
-    return true;
-  }
+  console.log("Sending email to:", to);
+  console.log("Email subject:", subject);
+  console.log("SES client", ses);
+  console.log({
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
+    }
+  })
+
+  // // In development, intercept emails and save to dev messages
+  // if (process.env.NODE_ENV === 'development') {
+  //   await saveDevMessage({
+  //     to,
+  //     subject,
+  //     content: emailHtml,
+  //     type: 'email',
+  //     metadata: { props } // Store original props for potential debugging
+  //   });
+  //   return true;
+  // }
 
   // In production, send actual email via AWS SES
   const params = {

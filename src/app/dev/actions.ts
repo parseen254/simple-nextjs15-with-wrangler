@@ -1,9 +1,5 @@
 'use server'
 
-import { getDB } from '@/db'
-import { getCloudflareContext } from '@opennextjs/cloudflare'
-import * as schema from '@/db/schema/schema'
-import { eq, desc } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 

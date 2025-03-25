@@ -3,7 +3,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 import * as schema from '@/db/schema/schema'
 import { eq, desc } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
-import { broadcastDevMessages } from './stream/route'
+import { broadcastDevMessages } from './stream/(helpers)/broadcast'
 import type { DevMessage } from '@/components/dev/hooks/use-dev-messages'
 
 type CreateMessageBody = {

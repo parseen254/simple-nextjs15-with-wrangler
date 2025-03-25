@@ -1,12 +1,7 @@
 import { getDevMessages } from '@/app/dev/actions'
-import { getDB } from '@/db'
-import * as schema from '@/db/schema/schema'
-import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { desc } from 'drizzle-orm'
-import type { DevMessage } from '@/components/dev/hooks/use-dev-messages'
 
-// Set a client ID to track connected clients
-const clients = new Map<string, ReadableStreamController<Uint8Array>>()
+import type { DevMessage } from '@/components/dev/hooks/use-dev-messages'
+import { clients } from './(helpers)/broadcast'
 
 export async function GET() {
   // Only available in development mode
@@ -21,7 +16,7 @@ export async function GET() {
   const stream = new ReadableStream({
     start(controller) {
       clients.set(clientId, controller)
-      
+
       // Send initial data
       sendInitialData(controller)
 
@@ -48,7 +43,7 @@ async function sendInitialData(controller: ReadableStreamController<Uint8Array>)
   try {
     const messages = (await getDevMessages()) as DevMessage[]
     const unreadCount = messages.filter((m: DevMessage) => !m.read).length
-    
+
     const data = {
       messages,
       unreadCount
@@ -58,36 +53,5 @@ async function sendInitialData(controller: ReadableStreamController<Uint8Array>)
     controller.enqueue(new TextEncoder().encode(event))
   } catch (error) {
     console.error('Error sending initial SSE data:', error)
-  }
-}
-
-// Helper function to broadcast updates to all connected clients
-export async function broadcastDevMessages() {
-  if (process.env.NODE_ENV !== 'development' || clients.size === 0) {
-    return
-  }
-  
-  try {
-    const database = getDB(getCloudflareContext().env.DB)
-    const messages = await database.select()
-      .from(schema.devMessages)
-      .orderBy(desc(schema.devMessages.createdAt)) as DevMessage[]
-    
-    const unreadCount = messages.filter((m: DevMessage) => !m.read).length
-    
-    const data = {
-      messages,
-      unreadCount
-    }
-
-    const event = `data: ${JSON.stringify(data)}\n\n`
-    const encodedEvent = new TextEncoder().encode(event)
-    
-    // Send to all connected clients
-    for (const controller of clients.values()) {
-      controller.enqueue(encodedEvent)
-    }
-  } catch (error) {
-    console.error('Error broadcasting SSE update:', error)
   }
 }

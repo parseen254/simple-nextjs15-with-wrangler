@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const session = await auth()
   
   // Protect /todos and /user routes
-  if (request.nextUrl.pathname.startsWith('/todos') || request.nextUrl.pathname.startsWith('/user')) {
+  if (request.nextUrl.pathname.startsWith('/todos') || request.nextUrl.pathname.startsWith('/profile')) {
     if (!session) {
       const signinUrl = new URL('/signin', request.url)
       return NextResponse.redirect(signinUrl)
