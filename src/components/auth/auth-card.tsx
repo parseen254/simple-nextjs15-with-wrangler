@@ -1,7 +1,13 @@
-import { ReactNode } from 'react';
-import { ArrowLeft, LockIcon } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '../ui/button';
+import { ReactNode } from "react";
+import { ArrowLeft, LockIcon } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "../ui/button";
 
 type AuthCardProps = {
   title?: string;
@@ -10,15 +16,15 @@ type AuthCardProps = {
   onBack?: () => void;
 };
 
-export function AuthCard({ 
+export function AuthCard({
   title = "Authentication",
   description,
   children,
-  onBack 
+  onBack,
 }: AuthCardProps) {
   return (
     <Card className="w-full max-w-lg mx-auto p-6 sm:p-12 shadow-lg">
-      <CardHeader className='mb-2'>
+      <CardHeader className="mb-2">
         {/* Back button above the title */}
         {onBack && (
           <div className="mb-2">
@@ -33,24 +39,22 @@ export function AuthCard({
             </Button>
           </div>
         )}
-        
+
         {/* Title centered */}
-          <CardTitle className='flex items-center text-2xl'>
-            <div className="bg-primary/10 p-3 rounded-full mr-3">
-              <LockIcon className="h-5 w-5 text-primary" />
-            </div>
-            {title}
-          </CardTitle>
-        
+        <CardTitle className="flex items-center text-2xl">
+          <div className="bg-primary/10 p-3 rounded-full mr-3">
+            <LockIcon className="h-5 w-5 text-primary" />
+          </div>
+          {title}
+        </CardTitle>
+
         {description && (
-          <CardDescription className='text-center text-lg'>
+          <CardDescription className="text-center text-lg">
             {description}
           </CardDescription>
         )}
       </CardHeader>
-      <CardContent>
-        {children}
-      </CardContent>
+      <CardContent>{children}</CardContent>
     </Card>
   );
 }

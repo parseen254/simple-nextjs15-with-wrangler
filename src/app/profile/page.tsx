@@ -1,30 +1,36 @@
-import { getDB } from "@/db"
-import * as schema from "@/db/schema/schema"
-import { Toaster } from "@/components/ui/sonner"
-import { getCloudflareContext } from "@opennextjs/cloudflare"
-import { auth } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { eq } from "drizzle-orm"
-import { Label } from '@/components/ui/label'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import Link from "next/link"
-import { updateProfile, splitFullName } from "./actions"
+import { getDB } from "@/db";
+import * as schema from "@/db/schema/schema";
+import { Toaster } from "@/components/ui/sonner";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { eq } from "drizzle-orm";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { updateProfile, splitFullName } from "./actions";
 
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const session = await auth();
 
   if (!session?.user) {
-    redirect('/');
+    redirect("/");
   }
 
   // Await searchParams before using it
-  const isEditing = (await Promise.resolve(searchParams)).edit === 'true';
+  const isEditing = (await Promise.resolve(searchParams)).edit === "true";
 
   const userId = session.user.id;
   const database = getDB(getCloudflareContext().env.DB);
@@ -32,8 +38,8 @@ export default async function ProfilePage({
   const user = await database
     .select()
     .from(schema.users)
-    .where(eq(schema.users.id, parseInt(userId || '')))
-    .then(users => users[0]);
+    .where(eq(schema.users.id, parseInt(userId || "")))
+    .then((users) => users[0]);
 
   const { firstName, lastName } = await splitFullName(user?.name);
 
@@ -45,7 +51,9 @@ export default async function ProfilePage({
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle>My Profile</CardTitle>
-                <CardDescription>View and manage your account details</CardDescription>
+                <CardDescription>
+                  View and manage your account details
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -73,7 +81,9 @@ export default async function ProfilePage({
                     </div>
                     {/* Translucent overlay */}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">Change Photo</span>
+                      <span className="text-white text-sm font-medium">
+                        Change Photo
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -99,7 +109,9 @@ export default async function ProfilePage({
                   </div>
                   <div className="space-y-2">
                     <Label>Email</Label>
-                    <p className="text-lg font-medium text-muted-foreground">{user.email}</p>
+                    <p className="text-lg font-medium text-muted-foreground">
+                      {user.email}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label>Member since</Label>
@@ -170,5 +182,5 @@ export default async function ProfilePage({
       </div>
       <Toaster />
     </main>
-  )
+  );
 }

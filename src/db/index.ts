@@ -16,17 +16,17 @@ export type NewTodo = typeof schema.todos.$inferInsert;
 
 // Helper type for todo with user info
 export type TodoWithUserInfo = {
-  id: number
-  title: string
-  description: string | null
-  priority: 'low' | 'medium' | 'high'
-  completed: boolean
-  createdAt: Date
-  userId: number
-  userName: string | null
-  userEmail: string | null
-  updatedAt: Date
-}
+  id: number;
+  title: string;
+  description: string | null;
+  priority: "low" | "medium" | "high";
+  completed: boolean;
+  createdAt: Date;
+  userId: number;
+  userName: string | null;
+  userEmail: string | null;
+  updatedAt: Date;
+};
 
 // Helper functions for todo CRUD operations
 export async function getTodos(db: DB) {
@@ -34,12 +34,13 @@ export async function getTodos(db: DB) {
 }
 
 export async function getTodoById(db: DB, id: number) {
-  const [todo] = await db.select()
+  const [todo] = await db
+    .select()
     .from(schema.todos)
     .where(eq(schema.todos.id, id))
-    .limit(1)
+    .limit(1);
 
-  return todo
+  return todo;
 }
 
 export async function searchTodos(db: DB, searchTerm: string) {
@@ -57,22 +58,26 @@ export async function getCompletedTodos(db: DB) {
 }
 
 export async function createTodo(
-  db: DB, 
-  data: Pick<Todo, 'title' | 'description' | 'priority' | 'userId'>
+  db: DB,
+  data: Pick<Todo, "title" | "description" | "priority" | "userId">,
 ) {
-  const [todo] = await db.insert(schema.todos)
+  const [todo] = await db
+    .insert(schema.todos)
     .values({
       ...data,
       completed: false,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
-    .returning()
+    .returning();
 
-  return todo
+  return todo;
 }
 
-export async function getTodoWithUserInfo(db: DB, id: number): Promise<TodoWithUserInfo[]> {
+export async function getTodoWithUserInfo(
+  db: DB,
+  id: number,
+): Promise<TodoWithUserInfo[]> {
   return await db
     .select({
       id: schema.todos.id,
@@ -93,50 +98,57 @@ export async function getTodoWithUserInfo(db: DB, id: number): Promise<TodoWithU
 }
 
 export async function getUserTodos(db: DB, userId: number) {
-  return await db.select({
-    id: schema.todos.id,
-    title: schema.todos.title,
-    description: schema.todos.description,
-    priority: schema.todos.priority,
-    completed: schema.todos.completed,
-    createdAt: schema.todos.createdAt,
-    userId: schema.todos.userId,
-    userName: schema.users.name,
-    userEmail: schema.users.email,
-  })
-  .from(schema.todos)
-  .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
-  .where(eq(schema.todos.userId, userId))
-  .orderBy(schema.todos.createdAt)
+  return await db
+    .select({
+      id: schema.todos.id,
+      title: schema.todos.title,
+      description: schema.todos.description,
+      priority: schema.todos.priority,
+      completed: schema.todos.completed,
+      createdAt: schema.todos.createdAt,
+      userId: schema.todos.userId,
+      userName: schema.users.name,
+      userEmail: schema.users.email,
+    })
+    .from(schema.todos)
+    .innerJoin(schema.users, eq(schema.users.id, schema.todos.userId))
+    .where(eq(schema.todos.userId, userId))
+    .orderBy(schema.todos.createdAt);
 }
 
 export async function updateTodo(
   db: DB,
   todoId: number,
-  data: Partial<Pick<Todo, 'title' | 'description' | 'priority' | 'completed'>>
+  data: Partial<Pick<Todo, "title" | "description" | "priority" | "completed">>,
 ) {
-  const [todo] = await db.update(schema.todos)
-    .set({ 
-      ...data, 
-      updatedAt: new Date() 
+  const [todo] = await db
+    .update(schema.todos)
+    .set({
+      ...data,
+      updatedAt: new Date(),
     })
     .where(eq(schema.todos.id, todoId))
-    .returning()
+    .returning();
 
-  return todo
+  return todo;
 }
 
-export async function toggleTodoCompleted(db: DB, id: number, completed: boolean) {
+export async function toggleTodoCompleted(
+  db: DB,
+  id: number,
+  completed: boolean,
+) {
   await db
     .update(schema.todos)
     .set({ completed, updatedAt: new Date() })
     .where(eq(schema.todos.id, id));
-  
+
   return getTodoWithUserInfo(db, id);
 }
 
 export async function deleteTodo(db: DB, todoId: number) {
-  return await db.delete(schema.todos)
+  return await db
+    .delete(schema.todos)
     .where(eq(schema.todos.id, todoId))
-    .returning()
+    .returning();
 }

@@ -1,10 +1,10 @@
-'use client';
-import { useState, useTransition, Suspense } from 'react';
-import { AuthCard } from './auth-card';
-import { EmailForm } from './email-form';
-import { OtpForm } from './otp-form';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+"use client";
+import { useState, useTransition, Suspense } from "react";
+import { AuthCard } from "./auth-card";
+import { EmailForm } from "./email-form";
+import { OtpForm } from "./otp-form";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 // Component to render while suspense is loading
 function AuthSkeleton() {
@@ -24,36 +24,37 @@ function AuthSkeleton() {
 // Main authentication component with improved suspense handling
 export function AuthComponent() {
   const [email, setEmail] = useState<string | null>(null);
-  const [stage, setStage] = useState<'email' | 'otp'>('email');
+  const [stage, setStage] = useState<"email" | "otp">("email");
   const [, startTransition] = useTransition();
 
   const handleEmailSubmit = (submittedEmail: string) => {
     startTransition(() => {
       setEmail(submittedEmail);
-      setStage('otp');
+      setStage("otp");
     });
   };
 
   const handleBackToEmail = () => {
-    setStage('email');
+    setStage("email");
     setEmail(null);
-    toast.info('Back to Email', {
-      description: 'Enter a different email address',
+    toast.info("Back to Email", {
+      description: "Enter a different email address",
       duration: 4000,
     });
   };
 
-  const description = stage === 'email'
-    ? "Sign in or create an account to continue"
-    : "We've sent you a verification code";
+  const description =
+    stage === "email"
+      ? "Sign in or create an account to continue"
+      : "We've sent you a verification code";
 
   return (
     <Suspense fallback={<AuthSkeleton />}>
-      <AuthCard 
+      <AuthCard
         description={description}
-        onBack={stage === 'otp' ? handleBackToEmail : undefined}
+        onBack={stage === "otp" ? handleBackToEmail : undefined}
       >
-        {stage === 'email' ? (
+        {stage === "email" ? (
           <EmailForm onComplete={handleEmailSubmit} />
         ) : (
           email && <OtpForm email={email} onBack={handleBackToEmail} />

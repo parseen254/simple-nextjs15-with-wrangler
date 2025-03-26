@@ -1,10 +1,10 @@
-'use client';
-import { Suspense, useEffect } from 'react';
-import { AuthComponent } from './auth/auth-component';
-import { AuthCard } from './auth/auth-card';
-import { AuthErrorBoundary } from './auth/auth-error-boundary';
-import { Skeleton } from './ui/skeleton';
-import { useRouter } from 'next/navigation';
+"use client";
+import { Suspense, useEffect } from "react";
+import { AuthComponent } from "./auth/auth-component";
+import { AuthCard } from "./auth/auth-card";
+import { AuthErrorBoundary } from "./auth/auth-error-boundary";
+import { Skeleton } from "./ui/skeleton";
+import { useRouter } from "next/navigation";
 
 // Skeleton component for the auth form loading state
 function AuthFormSkeleton() {
@@ -27,7 +27,7 @@ export function OtpAuthForm() {
 
   // Pre-fetch the home page to speed up navigation after authentication
   useEffect(() => {
-    router.prefetch('/');
+    router.prefetch("/");
   }, [router]);
 
   return (

@@ -37,14 +37,14 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased min-h-screen flex flex-col`}>
+      <body
+        className={`${inter.className} antialiased min-h-screen flex flex-col`}
+      >
         <NextAuthProvider>
           <Suspense fallback={<NavbarFallback />}>
             <Navbar user={session?.user} />
           </Suspense>
-          <main className="flex-1 flex flex-col">
-            {children}
-          </main>
+          <main className="flex-1 flex flex-col">{children}</main>
           <DevPreview />
           <Toaster />
         </NextAuthProvider>

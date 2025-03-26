@@ -25,9 +25,13 @@ export const todos = sqliteTable("todos", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   description: text("description"),
-  priority: text("priority", { enum: ["low", "medium", "high"] }).notNull().default("medium"),
+  priority: text("priority", { enum: ["low", "medium", "high"] })
+    .notNull()
+    .default("medium"),
   completed: integer("completed", { mode: "boolean" }).notNull().default(false),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$default(() => sql`CURRENT_TIMESTAMP`),
@@ -53,7 +57,9 @@ export const devMessages = sqliteTable("dev_messages", {
   to: text("to").notNull(),
   subject: text("subject").notNull(),
   content: text("content").notNull(),
-  type: text("type", { enum: ["email", "sms", "whatsapp"] }).notNull().default("email"),
+  type: text("type", { enum: ["email", "sms", "whatsapp"] })
+    .notNull()
+    .default("email"),
   read: integer("read", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()

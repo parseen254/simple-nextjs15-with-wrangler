@@ -1,25 +1,25 @@
-'use client';
-import { useTransition } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { MailCheckIcon } from 'lucide-react';
-import { toast } from 'sonner';
+"use client";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { MailCheckIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormMessage
-} from '../ui/form';
-import { Input } from '../ui/input';
-import { LoadingButton } from './loading-button';
-import { requestOtp } from '@/app/signin/actions';
+  FormMessage,
+} from "../ui/form";
+import { Input } from "../ui/input";
+import { LoadingButton } from "./loading-button";
+import { requestOtp } from "@/app/signin/actions";
 
 // Email validation schema
 const emailSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  email: z.string().email("Please enter a valid email address"),
 });
 
 type EmailFormProps = {
@@ -32,33 +32,36 @@ export function EmailForm({ onComplete }: EmailFormProps) {
   const form = useForm<z.infer<typeof emailSchema>>({
     resolver: zodResolver(emailSchema),
     defaultValues: {
-      email: '',
+      email: "",
     },
-    mode: 'onChange',
+    mode: "onChange",
   });
 
   function onSubmit(values: z.infer<typeof emailSchema>) {
     startTransition(async () => {
       try {
         await requestOtp(values.email);
-        toast.success('Verification Code Sent', {
-          description: 'Please check your inbox for the 6-digit code',
+        toast.success("Verification Code Sent", {
+          description: "Please check your inbox for the 6-digit code",
           duration: 5000,
-          icon: <MailCheckIcon />
+          icon: <MailCheckIcon />,
         });
         onComplete(values.email);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to send verification code';
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to send verification code";
 
-        toast.error('Error Sending Code', {
+        toast.error("Error Sending Code", {
           description: errorMessage,
-          duration: 5000
+          duration: 5000,
         });
 
-        if (errorMessage.toLowerCase().includes('email')) {
-          form.setError('email', {
-            type: 'manual',
-            message: errorMessage
+        if (errorMessage.toLowerCase().includes("email")) {
+          form.setError("email", {
+            type: "manual",
+            message: errorMessage,
           });
         }
       }

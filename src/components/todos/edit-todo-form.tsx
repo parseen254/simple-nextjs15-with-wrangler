@@ -1,48 +1,61 @@
-'use client'
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Todo } from "@/db"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { useTodos } from "@/components/todos/context/todo-context"
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { Todo } from "@/db";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useTodos } from "@/components/todos/context/todo-context";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  priority: z.enum(["low", "medium", "high"]).default("medium")
-})
+  priority: z.enum(["low", "medium", "high"]).default("medium"),
+});
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 
 type EditTodoFormProps = {
-  todo: Todo
-  onClose: () => void
-}
+  todo: Todo;
+  onClose: () => void;
+};
 
 export function EditTodoForm({ todo, onClose }: EditTodoFormProps) {
-  const { handleUpdateTodo } = useTodos()
+  const { handleUpdateTodo } = useTodos();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: todo.title,
       description: todo.description || "",
-      priority: todo.priority
-    }
-  })
+      priority: todo.priority,
+    },
+  });
 
   async function onSubmit(data: FormValues) {
-    const formData = new FormData()
-    formData.append("title", data.title)
-    formData.append("description", data.description || "")
-    formData.append("priority", data.priority)
-    
-    await handleUpdateTodo(todo.id, formData)
-    onClose()
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("description", data.description || "");
+    formData.append("priority", data.priority);
+
+    await handleUpdateTodo(todo.id, formData);
+    onClose();
   }
 
   return (
@@ -69,7 +82,7 @@ export function EditTodoForm({ todo, onClose }: EditTodoFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input 
+                <Input
                   placeholder="Enter description"
                   {...field}
                   value={field.value || ""}
@@ -86,8 +99,8 @@ export function EditTodoForm({ todo, onClose }: EditTodoFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Priority</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
+              <Select
+                onValueChange={field.onChange}
                 value={field.value}
                 defaultValue={field.value}
               >
@@ -117,5 +130,5 @@ export function EditTodoForm({ todo, onClose }: EditTodoFormProps) {
         </div>
       </form>
     </Form>
-  )
+  );
 }

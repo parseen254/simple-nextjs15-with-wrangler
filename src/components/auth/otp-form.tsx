@@ -1,30 +1,36 @@
-'use client';
-import { useTransition, useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { MailCheckIcon, RefreshCw } from 'lucide-react';
-import { toast } from 'sonner';
-import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+"use client";
+import { useTransition, useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { MailCheckIcon, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormMessage
-} from '../ui/form';
-import { Button } from '../ui/button';
-import { LoadingButton } from './loading-button';
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '../ui/input-otp';
-import { requestOtp } from '@/app/signin/actions';
+  FormMessage,
+} from "../ui/form";
+import { Button } from "../ui/button";
+import { LoadingButton } from "./loading-button";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "../ui/input-otp";
+import { requestOtp } from "@/app/signin/actions";
 
 // OTP validation schema
 const otpSchema = z.object({
-  otp: z.string()
-    .min(6, 'Verification code must be exactly 6 digits')
-    .max(6, 'Verification code must be exactly 6 digits')
-    .regex(/^\d+$/, 'Verification code must contain only digits')
+  otp: z
+    .string()
+    .min(6, "Verification code must be exactly 6 digits")
+    .max(6, "Verification code must be exactly 6 digits")
+    .regex(/^\d+$/, "Verification code must contain only digits"),
 });
 
 type OtpFormProps = {
@@ -42,9 +48,9 @@ export function OtpForm({ email }: OtpFormProps) {
   const form = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
     defaultValues: {
-      otp: ''
+      otp: "",
     },
-    mode: 'onChange'
+    mode: "onChange",
   });
 
   // Format the countdown timer display
@@ -65,22 +71,25 @@ export function OtpForm({ email }: OtpFormProps) {
   // Function to handle resending OTP
   async function handleResendOtp() {
     if (countdown > 0) return;
-    
+
     setIsResending(true);
     try {
       await requestOtp(email);
       form.reset(); // Clear the form when resending
-      toast.success('Verification Code Sent', {
-        description: 'Please check your inbox for the new 6-digit code',
+      toast.success("Verification Code Sent", {
+        description: "Please check your inbox for the new 6-digit code",
         duration: 5000,
-        icon: <MailCheckIcon />
+        icon: <MailCheckIcon />,
       });
       setCountdown(60);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to resend verification code';
-      toast.error('Error Sending Code', {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to resend verification code";
+      toast.error("Error Sending Code", {
         description: errorMessage,
-        duration: 5000
+        duration: 5000,
       });
     } finally {
       setIsResending(false);
@@ -92,52 +101,52 @@ export function OtpForm({ email }: OtpFormProps) {
       try {
         // Immediately prevent multiple submissions
         form.reset({ otp: values.otp }); // Keep the same value while disabling input
-        
+
         // Attempt sign in through Next Auth
-        const result = await signIn('otp-auth', {
+        const result = await signIn("otp-auth", {
           email,
           otp: values.otp,
           redirect: false,
-        });        
+        });
         // Check if authentication failed and handle errors from Next Auth
         if (result?.error) {
           // If failed, clear the form
           form.reset();
-          
+
           // Display error from Next Auth
-          const errorMessage = 'Invalid verification code';
-          toast.error('Verification Failed', {
+          const errorMessage = "Invalid verification code";
+          toast.error("Verification Failed", {
             description: errorMessage,
             duration: 5000,
             action: {
-              label: 'Try Again',
-              onClick: () => form.setFocus('otp')
-            }
+              label: "Try Again",
+              onClick: () => form.setFocus("otp"),
+            },
           });
           return;
         }
-        
+
         // Authentication succeeded, now we can:
         // 1. Update the session
         await updateSession();
         // 2. Show success toast
-        toast.success('Authentication Successful', {
-          description: 'Redirecting to your dashboard...',
-          duration: 4000
+        toast.success("Authentication Successful", {
+          description: "Redirecting to your dashboard...",
+          duration: 4000,
         });
         // 3. After a small delay for session update, redirect
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
         // 4. Navigate to dashboard
-        router.push('/todos');
+        router.push("/todos");
         router.refresh();
-
       } catch (error) {
         // Handle unexpected errors (network issues, etc.)
         form.reset();
-        const errorMessage = error instanceof Error ? error.message : 'Verification failed';
-        toast.error('Error', {
+        const errorMessage =
+          error instanceof Error ? error.message : "Verification failed";
+        toast.error("Error", {
           description: errorMessage,
-          duration: 5000
+          duration: 5000,
         });
       }
     });
@@ -151,7 +160,8 @@ export function OtpForm({ email }: OtpFormProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium">Verification Code</p>
               <p className="text-sm text-muted-foreground">
-                Enter the code sent to <span className="font-medium text-foreground">{email}</span>
+                Enter the code sent to{" "}
+                <span className="font-medium text-foreground">{email}</span>
               </p>
             </div>
           </div>
@@ -194,15 +204,15 @@ export function OtpForm({ email }: OtpFormProps) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <LoadingButton 
-            type="submit" 
+          <LoadingButton
+            type="submit"
             className="w-full h-11"
             isLoading={isPending}
             loadingText="Verifying..."
           >
             Verify Code
           </LoadingButton>
-          
+
           <Button
             type="button"
             variant="outline"
