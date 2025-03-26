@@ -3,6 +3,9 @@ import { render } from '@react-email/render';
 import OtpEmail from '@/emails/otp-email';
 import { saveDevMessage } from '@/app/dev/actions';
 
+// Explicitly set to use Node.js runtime, not Edge
+export const runtime = 'nodejs'
+
 // const ses = new SESClient({
 //   region: process.env.AWS_REGION || "us-east-1",
 //   credentials: {

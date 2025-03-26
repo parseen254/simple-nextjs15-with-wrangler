@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '2mb'
     }
   },
+  // Add middleware configuration to avoid Edge Runtime for auth routes
+  middleware: {
+    skipMiddlewareUrlNormalize: true,
+  },
+  // Specify which routes should not use Edge Runtime
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: true,
 }
 
 export default nextConfig

@@ -7,6 +7,9 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { getDB } from "@/db"
 import { OtpZodSchema } from "@/lib/zod"
 
+// Explicitly set to use Node.js runtime, not Edge
+export const runtime = 'nodejs'
+
 // Enhanced NextAuth configuration with optimized OTP authentication
 export const { handlers, signIn, signOut, auth } = NextAuth(() => {
     // This is a workaround to get the DB from the context
