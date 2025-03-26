@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -129,7 +129,7 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
       setIsDeleting(todoToDelete.id)
       await handleDeleteTodo(todoToDelete.id)
       toast.success("Todo deleted successfully")
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete todo")
     } finally {
       setIsDeleting(null)
@@ -303,7 +303,7 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
                       try {
                         setIsUpdating(todo.id)
                         await handleToggleTodo(todo.id, checked as boolean)
-                      } catch (error) {
+                      } catch {
                         // Error is handled in the context
                       } finally {
                         setIsUpdating(null)
@@ -378,7 +378,7 @@ export function PaginatedTodoList({ currentUserId }: PaginatedTodoListProps) {
                       <DialogHeader>
                         <DialogTitle>Edit Todo</DialogTitle>
                         <DialogDescription>
-                          Make changes to your todo item below. Click save when you're done.
+                          Make changes to your todo item below. Click save when you&apos;re done.
                         </DialogDescription>
                       </DialogHeader>
                       {selectedTodo && (

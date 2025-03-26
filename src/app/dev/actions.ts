@@ -9,7 +9,7 @@ export type MessageContent = {
     subject: string
     content: string
     type: 'email' | 'sms' | 'whatsapp'
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
 }
 
 // Helper to get the base URL

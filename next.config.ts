@@ -8,11 +8,9 @@ const nextConfig: NextConfig = {
     serverActions: {
       allowedOrigins: ['localhost:3000'],
       bodySizeLimit: '2mb'
-    }
-  },
-  // Add middleware configuration to avoid Edge Runtime for auth routes
-  middleware: {
-    skipMiddlewareUrlNormalize: true,
+    },
+    // Enable nodejs runtime support for middleware requires experimental.nodeMiddleware
+    nodeMiddleware: true,
   },
   // Specify which routes should not use Edge Runtime
   skipTrailingSlashRedirect: true,

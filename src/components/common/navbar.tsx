@@ -8,8 +8,7 @@ import {
   UserIcon, 
   LogOut, 
   CheckCheck, 
-  ListTodo,
-  Settings
+  ListTodo
 } from "lucide-react"
 import {
   DropdownMenu,

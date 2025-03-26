@@ -34,7 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth(() => {
                         }
 
                         // Parse and validate credentials
-                        const { email, otp } = await OtpZodSchema.parseAsync(credentials).catch(err => {
+                        const { email, otp } = await OtpZodSchema.parseAsync(credentials).catch(() => {
                             throw new Error("Invalid verification code format")
                         })
 

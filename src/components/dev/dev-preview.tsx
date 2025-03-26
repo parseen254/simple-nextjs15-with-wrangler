@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { InboxIcon, MailIcon, RefreshCw } from 'lucide-react'
+import { InboxIcon, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -65,13 +65,6 @@ export function DevPreview() {
     })
 
     const getTypeCounts = useCallback(() => {
-        const counts = {
-            all: messages.length,
-            email: messages.filter(m => m.type === 'email').length,
-            sms: messages.filter(m => m.type === 'sms').length,
-            whatsapp: messages.filter(m => m.type === 'whatsapp').length
-        }
-        
         const unreadCounts = {
             all: messages.filter(m => !m.read).length,
             email: messages.filter(m => m.type === 'email' && !m.read).length,
@@ -79,10 +72,10 @@ export function DevPreview() {
             whatsapp: messages.filter(m => m.type === 'whatsapp' && !m.read).length
         }
         
-        return { counts, unreadCounts }
+        return { unreadCounts }
     }, [messages])
 
-    const { counts, unreadCounts } = getTypeCounts()
+    const { unreadCounts } = getTypeCounts()
 
     // Only show in development
     if (process.env.NODE_ENV !== 'development') {

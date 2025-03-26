@@ -56,3 +56,6 @@ export const MessageDetail = memo(({ message, onBack }: MessageDetailProps) => {
         </div>
     )
 })
+
+// Add display name for ESLint rule
+MessageDetail.displayName = 'MessageDetail'

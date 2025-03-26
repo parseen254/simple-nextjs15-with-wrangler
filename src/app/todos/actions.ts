@@ -1,6 +1,6 @@
 'use server'
 
-import { getDB, getTodoWithUserInfo, updateTodo as updateTodoInDb } from '@/db'
+import { getDB, getTodoWithUserInfo } from '@/db'
 import { eq, desc } from 'drizzle-orm'
 import * as schema from '@/db/schema/schema'
 import { getCloudflareContext } from "@opennextjs/cloudflare"

@@ -18,3 +18,6 @@ export const SearchBar = memo(({ value, onChange }: SearchBarProps) => (
         />
     </div>
 ));
+
+// Add display name for ESLint rule
+SearchBar.displayName = 'SearchBar'

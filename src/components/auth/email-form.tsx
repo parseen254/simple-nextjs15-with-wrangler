@@ -3,7 +3,7 @@ import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { MailCheckIcon, MailIcon } from 'lucide-react';
+import { MailCheckIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -11,7 +11,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage
 } from '../ui/form';
 import { Input } from '../ui/input';

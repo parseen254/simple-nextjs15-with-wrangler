@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useReducer, type ReactNode } from 'react'
-import { addTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from '@/app/todos/actions'
+import { addTodo, deleteTodo, toggleTodo, updateTodo } from '@/app/todos/actions'
 import { toast } from 'sonner'
 import type { Todo } from '@/db'
 
@@ -148,9 +148,6 @@ export function TodoProvider({ children, initialTodos = [] }: {
 
   const handleDeleteTodo = async (id: number) => {
     try {
-      // Store the todo before deletion for potential recovery
-      const todoToDelete = state.todos.find(t => t.id === id)
-      
       // Optimistically remove the todo
       dispatch({ type: 'DELETE_TODO', payload: id })
 

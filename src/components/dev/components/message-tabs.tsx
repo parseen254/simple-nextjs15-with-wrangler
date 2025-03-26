@@ -76,3 +76,6 @@ export const MessageTabs = memo(({ activeCategory, setActiveCategory, unreadCoun
         </TabsList>
     </Tabs>
 ));
+
+// Add display name for ESLint rule
+MessageTabs.displayName = 'MessageTabs'

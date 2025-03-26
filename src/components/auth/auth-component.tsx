@@ -1,5 +1,5 @@
 'use client';
-import { useState, useTransition, Suspense, startTransition } from 'react';
+import { useState, useTransition, Suspense } from 'react';
 import { AuthCard } from './auth-card';
 import { EmailForm } from './email-form';
 import { OtpForm } from './otp-form';
@@ -25,7 +25,7 @@ function AuthSkeleton() {
 export function AuthComponent() {
   const [email, setEmail] = useState<string | null>(null);
   const [stage, setStage] = useState<'email' | 'otp'>('email');
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const handleEmailSubmit = (submittedEmail: string) => {
     startTransition(() => {

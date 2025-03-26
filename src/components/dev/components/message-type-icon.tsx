@@ -13,3 +13,6 @@ export const MessageTypeIcon = memo(({ type }: { type: string }) => {
             return <MailIcon className="size-4" />
     }
 });
+
+// Add display name for ESLint rule
+MessageTypeIcon.displayName = 'MessageTypeIcon'

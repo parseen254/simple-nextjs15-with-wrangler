@@ -7,13 +7,11 @@ import { MailCheckIcon, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage
 } from '../ui/form';
 import { Button } from '../ui/button';
@@ -34,7 +32,7 @@ type OtpFormProps = {
   onBack: () => void;
 };
 
-export function OtpForm({ email, onBack }: OtpFormProps) {
+export function OtpForm({ email }: OtpFormProps) {
   const router = useRouter();
   const [countdown, setCountdown] = useState(60);
   const [isPending, startTransition] = useTransition();

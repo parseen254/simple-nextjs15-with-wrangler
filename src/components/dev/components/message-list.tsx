@@ -15,6 +15,9 @@ const EmptyState = memo(() => (
     </div>
 ))
 
+// Add display name for the EmptyState component
+EmptyState.displayName = 'EmptyState'
+
 type MessageListProps = {
     messages: DevMessage[]
     onSelect: (message: DevMessage) => void
@@ -37,3 +40,6 @@ export const MessageList = memo(({ messages, onSelect }: MessageListProps) => {
         </div>
     )
 })
+
+// Add display name for the MessageList component
+MessageList.displayName = 'MessageList'

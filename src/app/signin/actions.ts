@@ -8,9 +8,6 @@ import { sendEmail } from '@/lib/aws-ses'
 import bcrypt from 'bcryptjs'
 import { formatDistanceToNow, addSeconds } from 'date-fns'
 
-// Explicitly set to use Node.js runtime, not Edge
-export const runtime = 'nodejs'
-
 /**
  * Request a new OTP for the given email
  * - Generates a new OTP

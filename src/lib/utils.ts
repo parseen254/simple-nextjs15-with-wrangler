@@ -11,13 +11,13 @@ export function generateOtp() {
 }
 
 // Debounce function for handling search input
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
+export function debounce<TArgs extends unknown[], TReturn>(
+  func: (...args: TArgs) => TReturn,
   delay: number
-): (...args: Parameters<T>) => void {
+): (...args: TArgs) => void {
   let timeoutId: NodeJS.Timeout;
   
-  return function(...args: Parameters<T>) {
+  return function(...args: TArgs) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       func(...args);

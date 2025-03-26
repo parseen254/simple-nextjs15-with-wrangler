@@ -68,7 +68,7 @@ export default function OtpEmail({
                             </Section>
 
                             <Text className="text-gray-700 text-sm">
-                                If you didn't request this code, you can safely ignore this email. Someone might have typed your email address by mistake.
+                                If you didn&apos;t request this code, you can safely ignore this email. Someone might have typed your email address by mistake.
                             </Text>
                         </Section>
 

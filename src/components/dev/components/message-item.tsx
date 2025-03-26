@@ -93,3 +93,6 @@ export const MessageItem = memo(({ message, onClick }: MessageItemProps) => {
         </div>
     )
 })
+
+// Add display name for ESLint rule
+MessageItem.displayName = 'MessageItem'
