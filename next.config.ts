@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
       allowedOrigins: ['localhost:3000'],
       bodySizeLimit: '2mb'
     },
-    // Enable nodejs runtime support for middleware requires experimental.nodeMiddleware
-    nodeMiddleware: true,
   },
   // Specify which routes should not use Edge Runtime
   skipTrailingSlashRedirect: true,

@@ -70,10 +70,10 @@ importers:
         version: 0.483.0(react@19.0.0)
       next:
         specifier: 15.3.0-canary.23
-        version: 15.3.0-canary.23(@babel/core@7.24.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 15.3.0-canary.23(@babel/core@7.24.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next-auth:
         specifier: 5.0.0-beta.25
-        version: 5.0.0-beta.25(next@15.3.0-canary.23(@babel/core@7.24.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nodemailer@6.10.0)(react@19.0.0)
+        version: 5.0.0-beta.25(next@15.3.0-canary.23(@babel/core@7.24.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nodemailer@6.10.0)(react@19.0.0)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -85,7 +85,7 @@ importers:
         version: 19.0.0(react@19.0.0)
       react-email:
         specifier: ^3.0.7
-        version: 3.0.7(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 3.0.7(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react-hook-form:
         specifier: ^7.54.2
         version: 7.54.2(react@19.0.0)
@@ -128,7 +128,7 @@ importers:
         version: 0.30.5
       drizzle-orm:
         specifier: ^0.41.0
-        version: 0.41.0(@cloudflare/workers-types@4.20250321.0)(gel@2.0.1)
+        version: 0.41.0(@cloudflare/workers-types@4.20250321.0)(@opentelemetry/api@1.9.0)(gel@2.0.1)
       esbuild:
         specifier: ^0.25.1
         version: 0.25.1
@@ -1911,6 +1911,10 @@ packages:
     hasBin: true
     peerDependencies:
       wrangler: ^3.114.1 || ^4.0.0
+
+  '@opentelemetry/api@1.9.0':
+    resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
+    engines: {node: '>=8.0.0'}
 
   '@panva/hkdf@1.2.1':
     resolution: {integrity: sha512-6oclG6Y3PiDFcoyk8srjLfVKyMfVCKJ27JwNPViuXziFpmdz+MZnZN/aKY0JGXgYuO/VghU0jcOAZgWXZ1Dmrw==}
@@ -7343,6 +7347,9 @@ snapshots:
       - aws-crt
       - supports-color
 
+  '@opentelemetry/api@1.9.0':
+    optional: true
+
   '@panva/hkdf@1.2.1': {}
 
   '@petamoriken/float16@3.9.2': {}
@@ -9018,9 +9025,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250321.0)(gel@2.0.1):
+  drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250321.0)(@opentelemetry/api@1.9.0)(gel@2.0.1):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20250321.0
+      '@opentelemetry/api': 1.9.0
       gel: 2.0.1
 
   dunder-proto@1.0.1:
@@ -10260,10 +10268,10 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  next-auth@5.0.0-beta.25(next@15.3.0-canary.23(@babel/core@7.24.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nodemailer@6.10.0)(react@19.0.0):
+  next-auth@5.0.0-beta.25(next@15.3.0-canary.23(@babel/core@7.24.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(nodemailer@6.10.0)(react@19.0.0):
     dependencies:
       '@auth/core': 0.37.2(nodemailer@6.10.0)
-      next: 15.3.0-canary.23(@babel/core@7.24.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next: 15.3.0-canary.23(@babel/core@7.24.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react: 19.0.0
     optionalDependencies:
       nodemailer: 6.10.0
@@ -10273,7 +10281,7 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  next@15.1.2(@babel/core@7.24.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  next@15.1.2(@babel/core@7.24.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@next/env': 15.1.2
       '@swc/counter': 0.1.3
@@ -10293,12 +10301,13 @@ snapshots:
       '@next/swc-linux-x64-musl': 15.1.2
       '@next/swc-win32-arm64-msvc': 15.1.2
       '@next/swc-win32-x64-msvc': 15.1.2
+      '@opentelemetry/api': 1.9.0
       sharp: 0.33.5
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
 
-  next@15.3.0-canary.23(@babel/core@7.24.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  next@15.3.0-canary.23(@babel/core@7.24.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@next/env': 15.3.0-canary.23
       '@swc/counter': 0.1.3
@@ -10318,6 +10327,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 15.3.0-canary.23
       '@next/swc-win32-arm64-msvc': 15.3.0-canary.23
       '@next/swc-win32-x64-msvc': 15.3.0-canary.23
+      '@opentelemetry/api': 1.9.0
       sharp: 0.33.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -10548,7 +10558,7 @@ snapshots:
       react: 19.0.0
       scheduler: 0.25.0
 
-  react-email@3.0.7(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  react-email@3.0.7(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@babel/core': 7.24.5
       '@babel/parser': 7.24.5
@@ -10560,7 +10570,7 @@ snapshots:
       glob: 10.3.4
       log-symbols: 4.1.0
       mime-types: 2.1.35
-      next: 15.1.2(@babel/core@7.24.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next: 15.1.2(@babel/core@7.24.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       normalize-path: 3.0.0
       ora: 5.4.1
       socket.io: 4.8.1
