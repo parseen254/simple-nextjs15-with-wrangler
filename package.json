@@ -76,7 +76,7 @@
 		"tailwind-merge": "^3.0.2",
 		"tailwindcss": "^4.0.16",
 		"typescript": "^5.8.2",
-		"wrangler": "^4.4.0"
+		"wrangler": "^4.59.1"
 	},
 	"overrides": {
 		"cookie": "^0.7.0",
